@@ -33,7 +33,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.innerText}>Server: {msg}</Text>
+      <Text style={styles.innerText}>Server-Hi from hari-: {msg}</Text>
       
       <TextInput
         style={styles.input}
