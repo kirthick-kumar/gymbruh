@@ -4,12 +4,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const userRoutes = require('./routes/user');
+
 const MONGODB_URI = 'mongodb+srv://node:mongo@cluster0.hzv32.mongodb.net/gym?retryWrites=true&w=majority&appName=Cluster0'
 
 const app = express();
 
 app.use(bodyParser.json());
 
+app.use(userRoutes);
 
 app.use((req, res, next) => {
     // * ALL | site1.com, site2.com... FOR SPECIFIC SITES
