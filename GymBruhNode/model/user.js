@@ -26,8 +26,8 @@ const userSchema = new mongoose.Schema({
         default: false 
     },
     payment_status: { 
-        type: String, 
-        default: "none" 
+        type: Boolean, 
+        default: false 
     },
     createdWorkouts: [{ 
         type: mongoose.Schema.Types.ObjectId, 

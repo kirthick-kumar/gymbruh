@@ -14,9 +14,6 @@ const exerciseSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    secondary_muscles: [{ 
-        type: String 
-    }],
     equipment: { type: String },
     difficulty: { 
         type: String, 
