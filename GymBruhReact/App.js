@@ -49,6 +49,7 @@ export default function App() {
     })
       .then(res => res.json())
       .then(resData => {
+        console.log(resData);
         if (resData.token) {
           setToken(resData.token);
         }
@@ -60,7 +61,6 @@ export default function App() {
 
   const checkAuth = () => {
     fetch('http://' + IP + ':8080/test', {
-        method: 'GET',
         headers: {
           Authorization: 'bearer ' + token
         }
