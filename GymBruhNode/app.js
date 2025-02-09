@@ -12,7 +12,6 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.use(userRoutes);
 
 app.use((req, res, next) => {
     // * ALL | site1.com, site2.com... FOR SPECIFIC SITES
@@ -22,9 +21,16 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(userRoutes);
+
+app.use((error, req, res, next) => {
+    console.log(error);
+    
+    res.status(error.status || 500).json({msg: error.message})
+})
 
 mongoose.connect(MONGODB_URI)
     .then(result => {
-        app.listen(3000);
+        app.listen(8080);
     })
     .catch(err => console.log(err));
