@@ -1,10 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, TextInput, SafeAreaView, Button } from 'react-native';
 import { useEffect, useState } from 'react';
+import LoginScreen from './LoginScreen';
 
 const IP = 'localhost'
 
 export default function App() {
+  
   const [msg, setMsg] = useState('');
   const [inputMsg, setInputMsg] = useState(''); 
   const [token, setToken] = useState(''); 
@@ -73,6 +75,8 @@ export default function App() {
   }
 
   return (
+
+
     <SafeAreaView style={styles.container}>
       <Text style={styles.innerText}>Server: {msg}</Text>
       <TextInput
@@ -116,3 +120,4 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
