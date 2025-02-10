@@ -6,9 +6,8 @@ import LoginScreen from './LoginScreen';
 const IP = 'localhost'
 
 export default function App() {
-   return <LoginScreen/>
-}
-  /* const [msg, setMsg] = useState('');
+  
+  const [msg, setMsg] = useState('');
   const [inputMsg, setInputMsg] = useState(''); 
   const [token, setToken] = useState(''); 
   
@@ -120,5 +119,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
   },
-}); */
+});
 
