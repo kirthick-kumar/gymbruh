@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 
+import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -30,14 +31,14 @@ export default function TabLayout() {
         name="login"
         options={{
           title: 'Login',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: () => <Ionicons  name="log-in-outline" size={29} color='red'/>,
         }}
       />
       <Tabs.Screen
         name="signup"
         options={{
           title: 'Signup',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: () => <Ionicons  name="person-add-outline" size={29} color='red'/>,
         }}
       />
     </Tabs>
