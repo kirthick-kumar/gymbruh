@@ -20,12 +20,28 @@ const styles = StyleSheet.create({
       marginBottom: 10,
       alignSelf: 'center'
     },
+    flex_inputs:{
+      display:'flex',
+      flexDirection:'row',
+      marginLeft:'7%'
+    },
+    input_half:{
+      width: '27%',
+      marginLeft:'3%',
+      height: 40,
+      borderColor: 'gray',
+      borderWidth: 1,
+      borderRadius: 5,
+      color: 'white',
+      paddingHorizontal: 10,
+      marginBottom: 10,
+    },
     title:{
       fontSize:42,
       fontWeight: 'bold',
       textAlign: 'center',
       backgroundColor: 'black',
-      color: 'green',
+      color: 'red',
       marginBottom:120,
     },
     image: {
