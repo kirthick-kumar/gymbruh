@@ -7,6 +7,7 @@ const Login = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Image  style={styles.image} source={require('../3.png')}></Image>
+      <Text style={styles.title}>Login</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"

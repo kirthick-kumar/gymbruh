@@ -1,13 +1,14 @@
 import { StyleSheet } from 'react-native';
 
 const black = '#343131';
+const red = '#C62E2E'
+const orange = '#EB5A3C'
 
 const styles = StyleSheet.create({
     container: {
       flex:1,
       flexDirection: 'column',
-      backgroundColor: 'black',
-      paddingTop: '50%'
+      paddingTop: '35%'
     },
     input: {
       width: '80%',
@@ -18,12 +19,13 @@ const styles = StyleSheet.create({
       color: 'white',
       paddingHorizontal: 10,
       marginBottom: 10,
-      alignSelf: 'center'
+      alignSelf: 'center',
+      outlineColor: 'red',
     },
     flex_inputs:{
       display:'flex',
       flexDirection:'row',
-      marginLeft:'7%'
+      marginLeft:'7%',
     },
     input_half:{
       width: '27%',
@@ -35,21 +37,34 @@ const styles = StyleSheet.create({
       color: 'white',
       paddingHorizontal: 10,
       marginBottom: 10,
+      outlineColor: 'red',
     },
     title:{
       fontSize:42,
       fontWeight: 'bold',
       textAlign: 'center',
-      backgroundColor: 'black',
-      color: 'red',
-      marginBottom:120,
+      color: 'white',
+      marginBottom: 50,
+    },
+    signupTitle:{
+      fontSize:42,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      color: 'white',
+    },
+    subtitle: {
+      fontSize:18,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      color: orange,
+      marginBottom: 30
     },
     image: {
       width: 100,
       height: 100, 
       resizeMode: 'contain',
       alignSelf: 'center',
-      marginBottom: 40
+      marginBottom: 10
     },    
     link:{
       color: 'white',
@@ -57,13 +72,12 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       textAlign: 'center',
       padding:4,
-      backgroundColor: black
     },
     button:{
       height:60,
       justifyContent:'center',
       borderRadius:40,
-      backgroundColor:'#FF0000',
+      backgroundColor:red,
       padding:6,
       width: '120px',
       height: '50px',

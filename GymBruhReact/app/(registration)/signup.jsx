@@ -8,6 +8,8 @@ const Signup = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Image  style={styles.image} source={require('../3.png')}></Image>
+      <Text style={styles.signupTitle}>Signup</Text>
+      <Text style={styles.subtitle}>To Join the GymBruhCommunity</Text>
       <TextInput
         style={styles.input}
         placeholder="FullName"
@@ -21,7 +23,7 @@ const Signup = () => {
       <View style={styles.flex_inputs}>
       <TextInput
         style={styles.input_half}
-        placeholder="age"
+        placeholder="Age"
         placeholderTextColor="gray"
       />
       <TextInput
