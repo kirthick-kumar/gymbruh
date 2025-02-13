@@ -1,12 +1,13 @@
 import React from 'react';
-import { SafeAreaView, Text, Pressable, TextInput, Image } from 'react-native';
+import { SafeAreaView, Text, Pressable, TextInput, Image, ImageBackground } from 'react-native';
 import { Link } from 'expo-router';
 import styles from '../styles/main'
 
 const Login = () => {
   return (
     <SafeAreaView style={styles.container}>
-      <Image  style={styles.image} source={require('../3.png')}></Image>
+      <ImageBackground source={'./doodle.png'} resizeMode="cover">
+      <Image style={styles.image} source={require('../3.png')}></Image>
       <Text style={styles.title}>Login</Text>
       <TextInput
         style={styles.input}
@@ -23,6 +24,7 @@ const Login = () => {
           <Text style={styles.buttonText}>Login</Text>
         </Pressable>
       </Link>
+    </ImageBackground>
     </SafeAreaView>
   );
 };

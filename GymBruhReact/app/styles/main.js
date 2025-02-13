@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native';
 
 const black = '#343131';
-const red = '#C62E2E'
-const orange = '#EB5A3C'
+const purple = '#664ac1'
+const orange = '#8E05C2'
 
 const styles = StyleSheet.create({
     container: {
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
       paddingHorizontal: 10,
       marginBottom: 10,
       alignSelf: 'center',
-      outlineColor: 'red',
+      outlineColor: 'purple',
     },
     flex_inputs:{
       display:'flex',
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
       color: 'white',
       paddingHorizontal: 10,
       marginBottom: 10,
-      outlineColor: 'red',
+      outlineColor: 'purple',
     },
     title:{
       fontSize:42,
@@ -51,12 +51,13 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       textAlign: 'center',
       color: 'white',
+      marginBottom: 10,
     },
     subtitle: {
       fontSize:18,
       fontWeight: 'bold',
       textAlign: 'center',
-      color: orange,
+      color: purple,
       marginBottom: 30
     },
     image: {
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
       height:60,
       justifyContent:'center',
       borderRadius:40,
-      backgroundColor:red,
+      backgroundColor:purple,
       padding:6,
       width: '120px',
       height: '50px',

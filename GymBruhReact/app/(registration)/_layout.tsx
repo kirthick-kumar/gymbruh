@@ -3,12 +3,13 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/main'
+
+const color = '#664ac1';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -32,14 +33,14 @@ export default function TabLayout() {
         name="login"
         options={{
           title: 'Login',
-          tabBarIcon: () => <Ionicons name='log-in-outline' size={29} color={'#EE4540'}/>,
+          tabBarIcon: () => <Ionicons name='log-in-outline' size={29} color={color}/>,
         }}
       />
       <Tabs.Screen
         name="signup"
         options={{
           title: 'Signup',
-          tabBarIcon: () => <Ionicons  name="person-add-outline" size={29} color='#EE4540'/>,
+          tabBarIcon: () => <Ionicons  name="person-add-outline" size={25} color={color}/>,
         }}
       />
     </Tabs>
