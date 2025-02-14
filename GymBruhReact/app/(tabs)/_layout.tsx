@@ -36,9 +36,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="sesh"
+        name="leaderboard"
         options={{
-          title: 'Sessions',
+          title: 'Leaderboard',
           tabBarIcon: () => <Ionicons name='list-outline' size={29} color={color}/>,
         }}
       />

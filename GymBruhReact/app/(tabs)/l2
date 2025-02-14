@@ -1,0 +1,129 @@
+import React from 'react';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import { Card, Text } from 'react-native-paper';
+// import styles from '../styles/workout';
+
+const leaderboardData = [
+  { name: "Eiden", bench: 315 },
+  { name: "Jackson", bench: 275 },
+  { name: "Emma Aria", bench: 185 },
+  { name: "Sebastian", bench: 225 },
+  { name: "Jason", bench: 245 },
+  { name: "Natalie", bench: 135 },
+  { name: "Serenity", bench: 155 },
+  { name: "Hannah", bench: 115 },
+];
+
+const color = '#42307e';
+
+const GymLeaderboard = () => (
+  <SafeAreaView style={styles.container}>
+    <Text style={styles.title}>Gym Leaderboard</Text>
+    {leaderboardData.map((athlete, index) => (
+      <Card key={athlete.name} style={styles.card}>
+        <Card.Content style={styles.cardBody}>
+          <Text style={[styles.cardText, { color: color }]}>{athlete.name}</Text>
+          <Text style={{ color: color, fontSize: 16 }}>Bench: {athlete.bench} kg</Text>
+        </Card.Content>
+      </Card>
+    ))}
+  </SafeAreaView>
+);
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#121212",
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  topThreeContainer: {
+    marginBottom: 20,
+  },
+  topTwoItem: {
+    backgroundColor: "#664ac1",
+    padding: 15,
+    borderRadius: 10,
+    alignSelf: 'center',
+    width: '60%',
+    marginBottom: 30
+  },
+  itemContainer: {
+    backgroundColor: "#1e1e1e",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  lift: {
+    fontSize: 16,
+    color: "#fff",
+  },
+});
+
+export default GymLeaderboard;
+
+
+
+
+// import React from 'react';
+// import { SafeAreaView, Pressable, Button } from 'react-native';
+// import { Card, Text } from 'react-native-paper';
+// import styles from '../styles/workout';
+// import { Ionicons } from '@expo/vector-icons';
+
+// const color = '#42307e'
+
+// const workouts = [
+//   {
+//     id: '1',
+//     name: 'Push',
+//     muscle: 'Chest, Shoulder, Triceps',
+//   },
+//   {
+//     id: '2',
+//     name: 'Pull',
+//     muscle: 'Back, Biceps',
+//   },
+//   {
+//     id: '3',
+//     name: 'Legs',
+//     muscle: 'Legs, Forearms, Abs',
+//   },
+// ];
+
+// const MyComponent = () => (
+//   <SafeAreaView style={styles.container}>
+//     <Text style={styles.title}>Workouts</Text>
+//     {workouts.map((workout, index) => (
+//       <Card key={workout.id} style={[styles.card, { backgroundColor: index % 2 === 0 ? color : 'white' }]}>
+//         <Card.Content style={styles.cardBody}>
+//           <SafeAreaView>
+//             <Text style={[styles.cardText, { color: index % 2 === 0 ? 'white' : color }]}>
+//               {workout.name}
+//             </Text>
+//             <Text style={{ color: index % 2 === 0 ? 'white' : color, fontSize: 16 }}>
+//               {workout.muscle}
+//             </Text>
+//           </SafeAreaView>
+//           <Pressable onPress={() => console.log(`Delete ${workout.name}`)}>
+//             <Ionicons name="trash-outline" size={24} color={index % 2 === 0 ? 'white' : color} />
+//           </Pressable>
+//         </Card.Content>
+//       </Card>
+//     ))}
+//   </SafeAreaView>
+// );
+
+// export default MyComponent;
