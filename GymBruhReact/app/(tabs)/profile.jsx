@@ -17,7 +17,7 @@ const ProfileScreen = () => {
         <Text style={styles.userDetail}>Age: 28</Text>
         <Text style={styles.userDetail}>Weight: 75kg</Text>
         <Text style={styles.userDetail}>Height: 180cm</Text>
-        <Text style={styles.userDetail}>Progress: 70%</Text>
+        {/* <Text style={styles.userDetail}>Progress: 70%</Text> */}
         <View style={styles.switchContainer}>
           <Text style={styles.userDetail}>Notifications</Text>
           <Switch
@@ -34,7 +34,7 @@ const ProfileScreen = () => {
 
       {/* Premium Section */}
       <TouchableOpacity style={styles.section}>
-        <Text style={styles.sectionTitle}>Premium</Text>
+        <Text style={[styles.sectionTitle, {color: 'gold'}]}>Premium</Text>
       </TouchableOpacity>
 
       {/* GymBruh Section */}
