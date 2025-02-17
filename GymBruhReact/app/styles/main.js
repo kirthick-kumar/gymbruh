@@ -2,13 +2,14 @@ import { StyleSheet } from 'react-native';
 
 const black = '#343131';
 const purple = '#664ac1'
-const orange = '#8E05C2'
+// const orange = '#8E05C2'
 
 const styles = StyleSheet.create({
     container: {
       flex:1,
       flexDirection: 'column',
-      paddingTop: '35%'
+      paddingTop: '35%',
+      backgroundColor: "#121212",
     },
     input: {
       width: '80%',

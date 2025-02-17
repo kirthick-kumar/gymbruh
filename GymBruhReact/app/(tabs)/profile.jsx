@@ -1,23 +1,60 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Switch, Image, ScrollView } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Switch, Image, ScrollView, Alert } from "react-native";
+import { useLocalSearchParams, useRouter } from 'expo-router'; // Get params (token) from navigation
+
+import { useAuth } from '../AuthContext'; 
 import styles from '../styles/about';
 
 const ProfileScreen = () => {
-  const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [userData, setUserData] = useState(null);
+  const router = useRouter();
+  const { token } = useAuth(); 
+
+  const handleProfile = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/profile', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      console.log(data.msg);
+      if (response.ok) {
+        setUserData(data.user); // Store received data in state
+      } else {
+        Alert.alert("Error", data.message || "Failed to fetch profile");
+      }
+    } catch (error) {
+      console.error("Profile fetch error:", error);
+      Alert.alert("Error", "Something went wrong");
+    }
+  };
+
+  // Fetch profile data when the component mounts
+  useEffect(() => {
+    handleProfile();
+  }, []);
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>
-        <Image style={styles.image} source={require('../default.png')}></Image>
-        <Text style={[styles.sectionTitle, {fontSize: 30, alignSelf:'center'}]}>John</Text>
+        <Image style={styles.image} source={require('../default.png')} />
+        <Text style={[styles.sectionTitle, { fontSize: 30, alignSelf: 'center' }]}>
+          {userData?.username || "N/A"}
+        </Text>
       </View>
+
       {/* User Information Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Your Account</Text>
-        <Text style={styles.userDetail}>Name: John Doe</Text>
-        <Text style={styles.userDetail}>Age: 28</Text>
-        <Text style={styles.userDetail}>Weight: 75kg</Text>
-        <Text style={styles.userDetail}>Height: 180cm</Text>
-        {/* <Text style={styles.userDetail}>Progress: 70%</Text> */}
+        <Text style={styles.userDetail}>Name: {userData?.username || "N/A"}</Text>
+        <Text style={styles.userDetail}>Age: {userData?.age || "N/A"}</Text>
+        <Text style={styles.userDetail}>Weight: {userData?.weight || "N/A"} kg</Text>
+        <Text style={styles.userDetail}>Height: {userData?.height || "N/A"} cm</Text>
+
         <View style={styles.switchContainer}>
           <Text style={styles.userDetail}>Notifications</Text>
           <Switch
@@ -27,17 +64,15 @@ const ProfileScreen = () => {
         </View>
       </View>
 
-      {/* Register as Trainer Section */}
+      {/* Other sections */}
       <TouchableOpacity style={styles.section}>
         <Text style={styles.sectionTitle}>Register as Trainer</Text>
       </TouchableOpacity>
 
-      {/* Premium Section */}
       <TouchableOpacity style={styles.section}>
-        <Text style={[styles.sectionTitle, {color: 'gold'}]}>Premium</Text>
+        <Text style={[styles.sectionTitle, { color: 'gold' }]}>Premium</Text>
       </TouchableOpacity>
 
-      {/* GymBruh Section */}
       <TouchableOpacity style={styles.section}>
         <Text style={styles.sectionTitle}>About</Text>
       </TouchableOpacity>
@@ -45,11 +80,11 @@ const ProfileScreen = () => {
         <Text style={styles.sectionTitle}>Support</Text>
       </TouchableOpacity>
 
-
-      {/* Logout and Delete Account Section */}
-      <TouchableOpacity style={[styles.section, styles.logoutSection]}>
+      {/* Logout */}
+      <TouchableOpacity style={[styles.section, styles.logoutSection]} onPress={() => router.push('/')}>
         <Text style={[styles.sectionTitle, styles.logoutText]}>Logout</Text>
       </TouchableOpacity>
+
       <TouchableOpacity style={[styles.section, styles.deleteAccountSection]}>
         <Text style={[styles.sectionTitle, styles.deleteText]}>Delete Account</Text>
       </TouchableOpacity>

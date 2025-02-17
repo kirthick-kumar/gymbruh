@@ -8,7 +8,8 @@ module.exports = (req, res, next) => {
         throw error; 
     }
     const token = authHeader.split(' ')[1];
-
+    console.log(token);
+    
     let decoded;
     try{
         decoded = jwt.verify(token, '837reubfdmnbjhjki8fee8rndoay3');

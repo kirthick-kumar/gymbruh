@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const registerRoutes = require('./routes/register');
 const userRoutes = require('./routes/user');
 
 const MONGODB_URI = 'mongodb+srv://node:mongo@cluster0.hzv32.mongodb.net/gym?retryWrites=true&w=majority&appName=Cluster0'
@@ -21,6 +22,7 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(registerRoutes);
 app.use(userRoutes);
 
 app.use((error, req, res, next) => {

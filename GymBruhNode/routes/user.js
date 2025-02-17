@@ -6,15 +6,7 @@ const isAuth = require('../middleware/isAuth');
 const router = express.Router();
 
 // signup GET
-router.get('/signup', userController.getSignup);
+router.get('/profile', isAuth, userController.getProfile);
 
-// signup POST
-router.post('/signup', userController.postSignup);
-
-// login POST
-router.post('/login', userController.postLogin);
-
-// test GET
-router.get('/test', isAuth, userController.getAuth);
 
 module.exports = router;
