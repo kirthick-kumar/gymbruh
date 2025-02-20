@@ -1,7 +1,6 @@
 import React from 'react';
-import { SafeAreaView, Pressable, Button } from 'react-native';
+import { SafeAreaView, Pressable, StyleSheet } from 'react-native';
 import { Card, Text } from 'react-native-paper';
-import styles from '../styles/workout';
 import { Ionicons } from '@expo/vector-icons';
 
 const color = '#42307e'
@@ -46,5 +45,42 @@ const MyComponent = () => (
     ))}
   </SafeAreaView>
 );
+
+const black = '#343131';
+const purple = '#664ac1'
+const orange = '#8E05C2'
+
+const styles = StyleSheet.create({
+    container: {
+      flex:1,
+      flexDirection: 'column',
+      backgroundColor: "#121212",
+    },
+    card: {
+        marginTop: 30,
+        width: '90%',
+        height: 80,
+        alignSelf: 'center',
+        backgroundColor: purple,
+    },
+    cardBody: {
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center'
+    },
+    cardText: {
+        fontSize:28,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    title:{
+        fontSize:42,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: 'white',
+        marginBottom: 20,
+        marginTop: 50,
+    },
+})
 
 export default MyComponent;
