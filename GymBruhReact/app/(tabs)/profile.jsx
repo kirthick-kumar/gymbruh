@@ -39,8 +39,8 @@ const ProfileScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={[styles.section, {marginTop: 40}]}>
-        <Image style={styles.image} source={require('../default.png')} />
+      <View style={[styles.section, {marginTop: 40, backgroundColor: 'white'}]}>
+        <Image style={styles.image} source={require('../defaultp.png')} />
         <Text style={[styles.sectionTitle, { fontSize: 30, alignSelf: 'center' }]}>
           {userData?.username || "N/A"}
         </Text>
@@ -69,7 +69,7 @@ const ProfileScreen = () => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: 'gold' }]}>Premium</Text>
+        <Text style={[styles.sectionTitle, { color: '#dbad12' }]}>Premium</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.section}>
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // marginTop: 30,
-    backgroundColor: "#121212",
+    backgroundColor: "#e6e2e2",
   },
   image: {
     width: 100,
@@ -105,24 +105,24 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },   
   section: {
-    backgroundColor: "#09122C",
+    backgroundColor: "white",
     padding: 15,
     marginVertical: 5,
     borderRadius: 10,
     marginHorizontal: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowColor: "gray",
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#9d85ed",
+    color: "#47328c",
   },
   userDetail: {
     fontSize: 16,
-    color: "white",
+    color: "black",
     marginTop: 5,
   },
   switchContainer: {
@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   logoutSection: {
+    marginTop: 30,
     backgroundColor: "#ff4d4d",
   },
   logoutText: {
