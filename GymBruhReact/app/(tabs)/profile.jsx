@@ -39,21 +39,18 @@ const ProfileScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={[styles.section, {marginTop: 40, backgroundColor: 'white'}]}>
+      <View style={[styles.section, {marginTop: 30, paddingTop: 40, backgroundColor: 'white'}]}>
         <Image style={styles.image} source={require('../defaultp.png')} />
         <Text style={[styles.sectionTitle, { fontSize: 30, alignSelf: 'center' }]}>
           {userData?.username || "N/A"}
         </Text>
-      </View>
 
       {/* User Information Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Your Account</Text>
-        <Text style={styles.userDetail}>Name: {userData?.username || "N/A"}</Text>
         <Text style={styles.userDetail}>Age: {userData?.age || "N/A"}</Text>
         <Text style={styles.userDetail}>Weight: {userData?.weight || "N/A"} kg</Text>
         <Text style={styles.userDetail}>Height: {userData?.height || "N/A"} cm</Text>
-
+        <Text style={styles.userDetail}>Goal: Weight {userData?.goal || "Weight Maintain"}</Text>
+        
         <View style={styles.switchContainer}>
           <Text style={styles.userDetail}>Notifications</Text>
           <Switch
@@ -64,6 +61,10 @@ const ProfileScreen = () => {
       </View>
 
       {/* Other sections */}
+      <TouchableOpacity style={styles.section}>
+        <Text style={styles.sectionTitle}>Edit Profile</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.section}>
         <Text style={styles.sectionTitle}>Register as Trainer</Text>
       </TouchableOpacity>
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   logoutSection: {
-    marginTop: 30,
+    marginTop: 10,
     backgroundColor: "#ff4d4d",
   },
   logoutText: {

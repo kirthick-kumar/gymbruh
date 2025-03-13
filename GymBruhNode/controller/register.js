@@ -8,6 +8,8 @@ exports.getSignup = (req, res, next) => {
 }
 
 exports.postSignup = async (req, res, next) => {
+    const userData = req.body;
+    console.log(userData, req.body.password);
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
@@ -17,19 +19,19 @@ exports.postSignup = async (req, res, next) => {
     const goal = req.body.goal;
     
     const hashedPassword = await bcrypt.hash(password, 12);
-    // const user = new User({ 
-    //     username: username, 
-    //     email: email, 
-    //     password: hashedPassword, 
-    //     age: age,
-    //     weight: weight,
-    //     height: height,
-    //     goal: goal,
-    // });
+    const user = new User({ 
+        username: username, 
+        email: email, 
+        password: hashedPassword, 
+        age: age,
+        weight: weight,
+        height: height,
+        goal: goal,
+    });
 
     //TEST
-    const user = await User.findOne({email: email});
-    user.password = await bcrypt.hash(password, 12);
+    // const user = await User.findOne({email: email});
+    // user.password = await bcrypt.hash(password, 12);
 
     //SAVE
     const result = await user.save();

@@ -1,62 +1,132 @@
-import React from 'react';
-import { SafeAreaView, Text, Pressable, TextInput, Image, View } from 'react-native';
-import { Link } from 'expo-router';
-import styles from '../styles/main'
+import React, { useState } from 'react';
+import { SafeAreaView, Text, Pressable, TextInput, Image, View, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 
+import styles from '../styles/main';
 
 const Signup = () => {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    age: '',
+    height: '',
+    weight: '',
+    phoneNumber: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const handleInputChange = (name, value) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    const { username, email, age, height, weight, phoneNumber, password, confirmPassword } = formData;
+    
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:8080/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (response.ok){
+        Alert.alert('Success', 'Registration successful!');
+        router.push({
+          pathname: '/login',
+        });
+      }
+      else
+        Alert.alert('Error', data.msg || 'Registration failed');
+    } 
+    catch (error) {
+      Alert.alert('Error', 'Something went wrong');
+      console.error('Registration error:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <Image  style={styles.image} source={require('../3.png')}></Image>
+      <Image style={styles.image} source={require('../3.png')} />
       <Text style={styles.signupTitle}>Signup</Text>
       <Text style={styles.subtitle}>To Join the GymBruhCommunity</Text>
+
       <TextInput
         style={styles.input}
-        placeholder="FullName"
+        placeholder="Username"
         placeholderTextColor="gray"
+        value={formData.username}
+        onChangeText={(text) => handleInputChange('username', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="Email"
         placeholderTextColor="gray"
+        value={formData.email}
+        onChangeText={(text) => handleInputChange('email', text)}
       />
       <View style={styles.flex_inputs}>
-      <TextInput
-        style={styles.input_half}
-        placeholder="Age"
-        placeholderTextColor="gray"
-      />
-      <TextInput
-        style={styles.input_half}
-        placeholder="Height (cm)"
-        placeholderTextColor="gray"
-      />
-      <TextInput
-        style={styles.input_half}
-        placeholder="Weight (kg)"
-        placeholderTextColor="gray"
-      />
+        <TextInput
+          style={styles.input_half}
+          placeholder="Age"
+          placeholderTextColor="gray"
+          value={formData.age}
+          onChangeText={(text) => handleInputChange('age', text)}
+        />
+        <TextInput
+          style={styles.input_half}
+          placeholder="Height (cm)"
+          placeholderTextColor="gray"
+          value={formData.height}
+          onChangeText={(text) => handleInputChange('height', text)}
+        />
+        <TextInput
+          style={styles.input_half}
+          placeholder="Weight (kg)"
+          placeholderTextColor="gray"
+          value={formData.weight}
+          onChangeText={(text) => handleInputChange('weight', text)}
+        />
       </View>
       <TextInput
         style={styles.input}
         placeholder="Phone Number"
         placeholderTextColor="gray"
+        value={formData.phoneNumber}
+        onChangeText={(text) => handleInputChange('phoneNumber', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         placeholderTextColor="gray"
+        secureTextEntry
+        value={formData.password}
+        onChangeText={(text) => handleInputChange('password', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="Confirm Password"
         placeholderTextColor="gray"
+        secureTextEntry
+        value={formData.confirmPassword}
+        onChangeText={(text) => handleInputChange('confirmPassword', text)}
       />
-      <Link href="login" asChild style={styles.link}>
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </Pressable>
-      </Link>
+
+      <Pressable style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </Pressable>
+
     </SafeAreaView>
   );
 };
