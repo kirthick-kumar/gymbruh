@@ -36,6 +36,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="add-workout" options={{ presentation: 'modal', headerShown: true, title: 'Add Workout' }} />
           <Stack.Screen name="+not-found" />
+          
         </Stack>
         <StatusBar style="auto" />
       </AuthProvider>
