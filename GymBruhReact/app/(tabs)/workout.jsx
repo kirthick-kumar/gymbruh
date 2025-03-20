@@ -1,4 +1,4 @@
-import { SafeAreaView, Pressable, StyleSheet } from 'react-native';
+import { SafeAreaView, Pressable, Button, StyleSheet } from 'react-native';
 import { Card, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInUp, FadeOut } from 'react-native-reanimated';
@@ -33,7 +33,7 @@ const MyComponent = () => {
           entering={FadeInUp.delay(index * 200)} 
           exiting={FadeOut}>
           <Pressable 
-            onPress={() => router.push({ pathname: "/exercises", params: { workout: JSON.stringify(workout) } })} 
+            onPress={() => router.push({ pathname: "/exercises/exercises", params: { workout: JSON.stringify(workout) } })} 
             style={[styles.card, { backgroundColor: index % 2 === 0 ? color : 'white' }]}
           >
             <Card.Content style={styles.cardBody}>
@@ -47,6 +47,13 @@ const MyComponent = () => {
           </Pressable>
         </Animated.View>
       ))}
+      <Pressable
+        style={styles.addButton}
+        mode="contained"
+        onPress={() => router.push('/addworkout/add-workout')}
+      >
+        <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600' }}>Add Workout</Text>
+      </Pressable>
     </SafeAreaView>
   );
 };
@@ -57,6 +64,15 @@ const styles = StyleSheet.create({
   cardBody: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardText: { fontSize: 28, fontWeight: 'bold' },
   title: { fontSize: 42, fontWeight: 'bold', textAlign: 'center', color: 'white', marginBottom: 20, marginTop: 50 },
+  addButton: {
+    backgroundColor: color,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignSelf: 'center',
+    width: '90%',
+    marginVertical: 20,
+    alignItems: 'center',
+  }
 });
 
 export default MyComponent;

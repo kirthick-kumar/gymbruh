@@ -1,6 +1,8 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, Linking, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router"; 
+import { router, useNavigation } from 'expo-router';
+
 
 const RecipeDetails = () => {
   const { meal } = useLocalSearchParams();
@@ -11,6 +13,10 @@ const RecipeDetails = () => {
   if (!recipe) {
     return <Text style={styles.errorText}>Error loading recipe details.</Text>;
   }
+  const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
 
   return (
     <ScrollView style={styles.container}>
@@ -52,6 +58,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     backgroundColor: "#fff",
+    paddingTop: 70
   },
   backButton: {
     backgroundColor: "#ddd",
