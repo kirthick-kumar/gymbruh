@@ -79,18 +79,21 @@ const MealPlan = () => {
     <View style={styles.container}>
       <Text style={styles.title}>🍽️ Meal Planner</Text>
 
-      {/* Improved Dropdown */}
+      {/* Dropdown with Fixed Height */}
       <View style={styles.dropdownContainer}>
-        <RNPickerSelect
-          onValueChange={(value) => setSelectedMealType(value)}
-          items={MEAL_TYPES.map((type) => ({ label: type.toUpperCase(), value: type }))}
-          style={{
-            inputIOS: styles.picker,
-            inputAndroid: styles.picker,
-            placeholder: styles.placeholder,
-          }}
-          placeholder={{ label: "Select Meal Type", value: null }}
-        />
+        <View style={{ height: 50, justifyContent: "center" }}>
+          <RNPickerSelect
+            onValueChange={(value) => setSelectedMealType(value)}
+            items={MEAL_TYPES.map((type) => ({ label: type.toUpperCase(), value: type }))}
+            style={{
+              inputIOS: styles.picker,
+              inputAndroid: styles.picker,
+              placeholder: styles.placeholder,
+            }}
+            useNativeAndroidPickerStyle={false} // Fix for Android
+            placeholder={{ label: "Select Meal Type", value: null }}
+          />
+        </View>
       </View>
 
       {/* List of Meals */}

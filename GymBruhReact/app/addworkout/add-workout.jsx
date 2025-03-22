@@ -95,14 +95,14 @@ const AddWorkout = () => {
             <Dialog.ScrollArea>
               <ScrollView>
                 {exercises.map((exercise) => (
-                  <View key={exercise} style={styles.checkboxContainer}>
-                    <Checkbox.Android
-                      status={selectedExercises.includes(exercise) ? 'checked' : 'unchecked'}
-                      onPress={() => toggleExercise(exercise)}
-                      color={color}
-                    />
-                    <Text style={styles.dialogText}>{exercise}</Text>
-                  </View>
+                  <Checkbox.Item
+                    key={exercise}
+                    label={exercise}
+                    status={selectedExercises.includes(exercise) ? 'checked' : 'unchecked'}
+                    onPress={() => toggleExercise(exercise)}
+                    color={color}
+                    labelStyle={styles.dialogText}
+                  />
                 ))}
               </ScrollView>
             </Dialog.ScrollArea>
@@ -219,11 +219,6 @@ const styles = StyleSheet.create({
   dialogButtonText: {
     color: color,
     fontSize: 16,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
   },
   submitButton: {
     marginTop: 20,
