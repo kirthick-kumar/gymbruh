@@ -12,7 +12,7 @@ const MEAL_TYPES = ["breakfast", "lunch", "dinner"];
 const fetchRecipes = async (mealType) => {
   try {
     const response = await axios.get(
-      `https://api.edamam.com/search?q=${mealType}&app_id=${APP_ID}&app_key=${APP_KEY}&mealType=${mealType}&to=10`,
+      `https://api.edamam.com/api/recipes/v2?type=public&q=${mealType}&app_id=${APP_ID}&app_key=${APP_KEY}&mealType=${mealType}&to=10`,
       {
         headers: { "Edamam-Account-User": "fallguy" },
       }
