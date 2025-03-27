@@ -8,11 +8,18 @@ import RNPickerSelect from "react-native-picker-select";
 const APP_ID = "fcf480bb";
 const APP_KEY = "be86ce88e4e8be1e0716ced3a9f7f599";
 const MEAL_TYPES = ["breakfast", "lunch", "dinner"];
+const DIET_FILTERS = [
+  { label: "None", value: "" },
+  { label: "High-Protein", value: "high-protein" },
+  { label: "High-Fiber", value: "high-fiber" },
+  { label: "Low-Fat", value: "low-fat" }
+];
 
-const fetchRecipes = async (mealType) => {
+const fetchRecipes = async (mealType, dietFilter) => {
   try {
+    const dietQuery = dietFilter ? `&diet=${dietFilter}` : "";
     const response = await axios.get(
-      `https://api.edamam.com/api/recipes/v2?type=public&q=${mealType}&app_id=${APP_ID}&app_key=${APP_KEY}&mealType=${mealType}&to=10`,
+      `https://api.edamam.com/api/recipes/v2?type=public&q=${mealType}&app_id=${APP_ID}&app_key=${APP_KEY}&mealType=${mealType}${dietQuery}&to=10`,
       {
         headers: { "Edamam-Account-User": "fallguy" },
       }
@@ -52,67 +59,61 @@ const MealCard = ({ meal, onPress }) => {
 };
 
 const MealPlan = () => {
-  const [meals, setMeals] = useState({});
+  const [meals, setMeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMealType, setSelectedMealType] = useState("breakfast");
+  const [selectedDietFilter, setSelectedDietFilter] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     const loadMeals = async () => {
       setLoading(true);
-      const mealData = {};
-      for (let type of MEAL_TYPES) {
-        mealData[type] = await fetchRecipes(type);
-      }
+      const mealData = await fetchRecipes(selectedMealType, selectedDietFilter);
       setMeals(mealData);
       setLoading(false);
     };
-
     loadMeals();
-  }, []);
-
-  if (loading) {
-    return <ActivityIndicator size="large" color="#ff7f50" style={{ marginTop: 50 }} />;
-  }
+  }, [selectedMealType, selectedDietFilter]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>🍽️ Meal Planner</Text>
 
-      {/* Dropdown with Fixed Height */}
+      {/* Meal Type Dropdown */}
       <View style={styles.dropdownContainer}>
-        <View style={{ height: 50, justifyContent: "center" }}>
-          <RNPickerSelect
-            onValueChange={(value) => setSelectedMealType(value)}
-            items={MEAL_TYPES.map((type) => ({ label: type.toUpperCase(), value: type }))}
-            style={{
-              inputIOS: styles.picker,
-              inputAndroid: styles.picker,
-              placeholder: styles.placeholder,
-            }}
-            useNativeAndroidPickerStyle={false} // Fix for Android
-            placeholder={{ label: "Select Meal Type", value: null }}
-          />
-        </View>
+        <RNPickerSelect
+          onValueChange={(value) => setSelectedMealType(value)}
+          items={MEAL_TYPES.map((type) => ({ label: type.toUpperCase(), value: type }))}
+          style={pickerStyles}
+          placeholder={{ label: "Select Meal Type", value: null }}
+        />
       </View>
 
-      {/* List of Meals */}
-      <FlatList
-        data={meals[selectedMealType] || []}
-        keyExtractor={(item, index) => `${selectedMealType}-${index}`}
-        renderItem={({ item: meal }) => (
-          <MealCard
-            meal={meal}
-            onPress={() => {
-              console.log("Navigating with meal:", meal);
-              router.push({
-                pathname: "/diet/RecipeDetails",
-                params: { meal: JSON.stringify(meal) },
-              });
-            }}
-          />
-        )}
-      />
+      {/* Diet Filter Dropdown */}
+      <View style={styles.dropdownContainer}>
+        <RNPickerSelect
+          onValueChange={(value) => setSelectedDietFilter(value)}
+          items={DIET_FILTERS}
+          style={pickerStyles}
+          placeholder={{ label: "Select Diet Filter", value: null }}
+        />
+      </View>
+
+      {/* Meal List */}
+      {loading ? (
+        <ActivityIndicator size="large" color="#ff7f50" style={{ marginTop: 50 }} />
+      ) : (
+        <FlatList
+          data={meals}
+          keyExtractor={(item, index) => `meal-${index}`}
+          renderItem={({ item: meal }) => (
+            <MealCard
+              meal={meal}
+              onPress={() => router.push({ pathname: "/diet/RecipeDetails", params: { meal: JSON.stringify(meal) } })}
+            />
+          )}
+        />
+      )}
     </View>
   );
 };
@@ -192,5 +193,11 @@ const styles = StyleSheet.create({
   fat: { color: "#ff7f50", fontWeight: "bold" },
   carbs: { color: "#007bff", fontWeight: "bold" },
 });
+
+const pickerStyles = {
+  inputIOS: styles.picker,
+  inputAndroid: styles.picker,
+  placeholder: styles.placeholder,
+};
 
 export default MealPlan;
