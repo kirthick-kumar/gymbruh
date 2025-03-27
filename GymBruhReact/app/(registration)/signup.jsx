@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { SafeAreaView, Text, Pressable, TextInput, Image, View, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState } from "react";
+import { SafeAreaView, Text, Pressable, TextInput, Image, View, Alert } from "react-native";
+import { useRouter } from "expo-router";
+import styles from "../styles/main";
+import { signUp } from "../../services/auth"; // Firebase signup function
 
-import styles from '../styles/main';
-
-const Signup = () => {
+const SignUpScreen = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    age: '',
-    height: '',
-    weight: '',
-    phoneNumber: '',
-    password: '',
-    confirmPassword: '',
+    username: "",
+    email: "",
+    age: "",
+    height: "",
+    weight: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const handleInputChange = (name, value) => {
@@ -24,57 +24,41 @@ const Signup = () => {
     }));
   };
 
-  const handleSubmit = async () => {
-    const { username, email, age, height, weight, phoneNumber, password, confirmPassword } = formData;
-    
+  const handleSignUp = async () => {
+    const { email, password, confirmPassword } = formData;
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
     try {
-      const response = await fetch('http://localhost:8080/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      if (response.ok){
-        Alert.alert('Success', 'Registration successful!');
-        router.push({
-          pathname: '/login',
-        });
+      const userCredential = await signUp(email, password);
+      if (userCredential) {
+        Alert.alert("Success", "Account created successfully!");
+        router.push("/(tabs)/diet");
       }
-      else
-        Alert.alert('Error', data.msg || 'Registration failed');
-    } 
-    catch (error) {
-      Alert.alert('Error', 'Something went wrong');
-      console.error('Registration error:', error);
+    } catch (error) {
+      Alert.alert("Sign Up Failed", error.message);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image style={styles.image} source={require('../3.png')} />
-      <Text style={styles.signupTitle}>Signup</Text>
-      <Text style={styles.subtitle}>To Join the GymBruhCommunity</Text>
+      <Image style={styles.image} source={require("../3.png")} />
+      <Text style={styles.title}>Sign Up</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Username"
         placeholderTextColor="gray"
         value={formData.username}
-        onChangeText={(text) => handleInputChange('username', text)}
+        onChangeText={(text) => handleInputChange("username", text)}
       />
       <TextInput
         style={styles.input}
         placeholder="Email"
         placeholderTextColor="gray"
         value={formData.email}
-        onChangeText={(text) => handleInputChange('email', text)}
+        onChangeText={(text) => handleInputChange("email", text)}
       />
       <View style={styles.flex_inputs}>
         <TextInput
@@ -82,21 +66,21 @@ const Signup = () => {
           placeholder="Age"
           placeholderTextColor="gray"
           value={formData.age}
-          onChangeText={(text) => handleInputChange('age', text)}
+          onChangeText={(text) => handleInputChange("age", text)}
         />
         <TextInput
           style={styles.input_half}
           placeholder="Height (cm)"
           placeholderTextColor="gray"
           value={formData.height}
-          onChangeText={(text) => handleInputChange('height', text)}
+          onChangeText={(text) => handleInputChange("height", text)}
         />
         <TextInput
           style={styles.input_half}
           placeholder="Weight (kg)"
           placeholderTextColor="gray"
           value={formData.weight}
-          onChangeText={(text) => handleInputChange('weight', text)}
+          onChangeText={(text) => handleInputChange("weight", text)}
         />
       </View>
       <TextInput
@@ -104,7 +88,7 @@ const Signup = () => {
         placeholder="Phone Number"
         placeholderTextColor="gray"
         value={formData.phoneNumber}
-        onChangeText={(text) => handleInputChange('phoneNumber', text)}
+        onChangeText={(text) => handleInputChange("phoneNumber", text)}
       />
       <TextInput
         style={styles.input}
@@ -112,7 +96,7 @@ const Signup = () => {
         placeholderTextColor="gray"
         secureTextEntry
         value={formData.password}
-        onChangeText={(text) => handleInputChange('password', text)}
+        onChangeText={(text) => handleInputChange("password", text)}
       />
       <TextInput
         style={styles.input}
@@ -120,15 +104,14 @@ const Signup = () => {
         placeholderTextColor="gray"
         secureTextEntry
         value={formData.confirmPassword}
-        onChangeText={(text) => handleInputChange('confirmPassword', text)}
+        onChangeText={(text) => handleInputChange("confirmPassword", text)}
       />
 
-      <Pressable style={styles.button} onPress={handleSubmit}>
+      <Pressable style={styles.button} onPress={handleSignUp}>
         <Text style={styles.buttonText}>Sign Up</Text>
       </Pressable>
-
     </SafeAreaView>
   );
 };
 
-export default Signup;
+export default SignUpScreen;
