@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { router, useNavigation } from 'expo-router';
 import { SafeAreaView, StyleSheet, View, ScrollView } from 'react-native';
 import { Text, TextInput, Button, Chip, Dialog, Portal, Checkbox } from 'react-native-paper';
+import * as Notifications from 'expo-notifications';
+
 
 const color = '#42307e';
 
@@ -19,6 +21,10 @@ const AddWorkout = () => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
+  useEffect(() => {
+    Notifications.requestPermissionsAsync();
+  }, []);
+
   const toggleMuscle = (muscle) => {
     setSelectedMuscles((prev) =>
       prev.includes(muscle) ? prev.filter((m) => m !== muscle) : [...prev, muscle]
@@ -31,9 +37,22 @@ const AddWorkout = () => {
     );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log({ workoutName, selectedMuscles, selectedExercises });
+  
+    // Send a notification
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Workout Saved",
+        body: `Your workout has been saved successfully!`,
+        sound: true,
+      },
+      trigger: null,
+    });
+  
+    router.push('/workout');
   };
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,6 +66,8 @@ const AddWorkout = () => {
           onChangeText={setWorkoutName}
           style={styles.input}
           placeholderTextColor="#888"
+          textColor="#fff" // Ensure text inside the input is white
+          theme={{ colors: { text: '#fff' } }} // Another way to enforce white text
         />
 
         {/* Muscles Section */}
