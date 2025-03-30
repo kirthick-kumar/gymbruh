@@ -22,8 +22,10 @@ const LoginScreen = () => {
         console.log("User Data:", { id: userDoc.id, ...userDoc.data() });
 
         const userCredential = await signIn(email, password);
-        if (userCredential)
+        if (userCredential){
+          // setToken(userCredential.token);
           router.push("/(tabs)/diet");  // Navigate only if successful login
+        }
       }
       else
         console.log("No user found!");

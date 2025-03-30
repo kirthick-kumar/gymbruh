@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { router, useNavigation } from 'expo-router';
 import { SafeAreaView, StyleSheet, View, ScrollView } from 'react-native';
 import { Text, TextInput, Button, Chip, Dialog, Portal, Checkbox } from 'react-native-paper';
+import { db } from '@/config/firebaseConfig';
+import { collection, addDoc, doc, updateDoc, arrayUnion } from "firebase/firestore";
 import * as Notifications from 'expo-notifications';
 
 
@@ -38,18 +40,34 @@ const AddWorkout = () => {
   };
 
   const handleSubmit = async () => {
-    console.log({ workoutName, selectedMuscles, selectedExercises });
+    const workout = { name: workoutName, muscles: selectedMuscles, exercises: selectedExercises };
+    console.log(workout);
   
-    // Send a notification
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Workout Saved",
-        body: `Your workout has been saved successfully!`,
-        sound: true,
-      },
-      trigger: null,
-    });
-  
+    try{
+      const workoutRef = await addDoc(collection(db, "workouts"), workout);
+      
+      // Add workout to user collection
+      // Hard coded userId change it later
+      const userId = "PXDYJCKtnULevYyzaNgp"
+      const userRef = doc(db, "users", userId); 
+      await updateDoc(userRef, {
+        createdWorkouts: arrayUnion(workoutRef.id)
+      });
+      
+      // Send a notification
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Workout Saved",
+          body: `Your workout has been saved successfully!`,
+          sound: true,
+        },
+        trigger: null,
+      });
+    }
+    catch (error) {
+      console.error("Error adding workout:", error);
+    }
+
     router.push('/workout');
   };
   
