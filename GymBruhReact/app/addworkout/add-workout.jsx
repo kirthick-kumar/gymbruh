@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { router, useNavigation } from 'expo-router';
+import { router, useNavigation, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView, StyleSheet, View, ScrollView } from 'react-native';
 import { Text, TextInput, Button, Chip, Dialog, Portal, Checkbox } from 'react-native-paper';
 import { db } from '@/config/firebaseConfig';
-import { collection, addDoc, doc, updateDoc, arrayUnion, getDocs } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, getDoc, arrayUnion, getDocs } from "firebase/firestore";
 import * as Notifications from 'expo-notifications';
 
 const color = '#42307e';
 const muscles = ['Chest', 'Shoulder', 'Triceps', 'Back', 'Biceps', 'Legs', 'Forearms', 'Abs'];
 
 const AddWorkout = () => {
+  const { workoutId } = useLocalSearchParams(); // Get workoutId if editing
   const [workoutName, setWorkoutName] = useState('');
   const [selectedMuscles, setSelectedMuscles] = useState([]);
   const [selectedExercises, setSelectedExercises] = useState([]); // Store exercise IDs
@@ -20,8 +21,9 @@ const AddWorkout = () => {
   
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
-    fetchExercises(); // Fetch exercises when component mounts
-  }, [navigation]);
+    fetchExercises();
+    if (workoutId) loadWorkoutData(workoutId); // Load existing workout if editing
+  }, [navigation, workoutId]);
 
   useEffect(() => {
     Notifications.requestPermissionsAsync();
@@ -40,6 +42,22 @@ const AddWorkout = () => {
     }
   };
 
+  const loadWorkoutData = async (id) => {
+    try {
+      const workoutRef = doc(db, "workouts", id);
+      const workoutSnap = await getDoc(workoutRef);
+
+      if (workoutSnap.exists()) {
+        const data = workoutSnap.data();
+        setWorkoutName(data.name);
+        setSelectedMuscles(data.muscles || []);
+        setSelectedExercises(data.exercises || []);
+      }
+    } catch (error) {
+      console.error("Error loading workout data:", error);
+    }
+  };
+
   const toggleMuscle = (muscle) => {
     setSelectedMuscles((prev) =>
       prev.includes(muscle) ? prev.filter((m) => m !== muscle) : [...prev, muscle]
@@ -54,39 +72,45 @@ const AddWorkout = () => {
 
   const handleSubmit = async () => {
     const workout = { name: workoutName, muscles: selectedMuscles, exercises: selectedExercises };
-    console.log(workout);
-  
+
     try {
-      const workoutRef = await addDoc(collection(db, "workouts"), workout);
-      
-      // Hardcoded userId, update later
-      const userId = "PXDYJCKtnULevYyzaNgp";
-      const userRef = doc(db, "users", userId); 
-      await updateDoc(userRef, {
-        createdWorkouts: arrayUnion(workoutRef.id)
-      });
-      
+      if (workoutId) {
+        // Update existing workout
+        const workoutRef = doc(db, "workouts", workoutId);
+        await updateDoc(workoutRef, workout);
+      } else {
+        // Add new workout
+        const workoutRef = await addDoc(collection(db, "workouts"), workout);
+        
+        // Hardcoded userId (update later)
+        const userId = "PXDYJCKtnULevYyzaNgp";
+        const userRef = doc(db, "users", userId);
+        await updateDoc(userRef, {
+          createdWorkouts: arrayUnion(workoutRef.id)
+        });
+      }
+
       // Send notification
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: "Workout Saved",
-          body: "Your workout has been saved successfully!",
+          title: workoutId ? "Workout Updated" : "Workout Saved",
+          body: workoutId ? "Your workout has been updated!" : "Your workout has been saved successfully!",
           sound: true,
         },
         trigger: null,
       });
-    } catch (error) {
-      console.error("Error adding workout:", error);
-    }
 
-    router.push('/workout');
+      router.push('/workout');
+    } catch (error) {
+      router.push('/workout');
+      console.error("Error saving workout:", error);
+    }
   };
-  
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Add Workout</Text>
+        <Text style={styles.title}>{workoutId ? "Edit Workout" : "Add Workout"}</Text>
 
         {/* Workout Name Input */}
         <TextInput
@@ -174,7 +198,7 @@ const AddWorkout = () => {
           style={styles.submitButton}
           labelStyle={styles.submitButtonText}
         >
-          Save Workout
+          {workoutId ? "Update Workout" : "Save Workout"}
         </Button>
 
         <Button 

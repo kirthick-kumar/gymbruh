@@ -16,14 +16,12 @@ import {
   addDoc,
   collection,
   getDocs,
-  arrayUnion,
 } from "firebase/firestore";
 
-
-const color = '#42307e';
+const color = "#42307e";
 
 const ExercisesScreen = () => {
-  const { workoutId } = useLocalSearchParams(); // Get workoutId from route
+  const { workoutId } = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
 
@@ -35,6 +33,39 @@ const ExercisesScreen = () => {
     navigation.setOptions({ headerShown: false });
     fetchWorkout();
   }, []);
+
+  
+  const addSet = (exerciseId) => {
+    setExerciseSets((prevSets) => {
+      const prevExerciseSets = prevSets[exerciseId] || [];
+      const lastSet = prevExerciseSets[prevExerciseSets.length - 1] || {
+        weight: 0,
+        reps: 0,
+        rpe: 0,
+        rating: 0,
+        completed: false,
+      };
+  
+      const newSet = {
+        ...lastSet,
+        id: Math.random().toString(),
+        completed: false,
+      };
+  
+      return {
+        ...prevSets,
+        [exerciseId]: [...prevExerciseSets, newSet],
+      };
+    });
+  };
+  
+  
+  const deleteSet = (exerciseId, index) => {
+    setExerciseSets((prevSets) => ({
+      ...prevSets,
+      [exerciseId]: prevSets[exerciseId].filter((_, i) => i !== index),
+    }));
+  };
 
   const fetchWorkout = async () => {
     try {
@@ -65,7 +96,54 @@ const ExercisesScreen = () => {
         if (exerciseIds.includes(doc.id)) {
           const exercise = doc.data();
           exerciseMap[doc.id] = { id: doc.id, ...exercise };
-          setsMap[doc.id] = exercise.sets || []; // Load existing sets
+          setsMap[doc.id] = [];
+        }
+      });
+
+      const sessionsRef = collection(db, "sessions");
+      const sessionsSnapshot = await getDocs(sessionsRef);
+
+      let maxVolumeSets = {};
+
+      sessionsSnapshot.forEach((doc) => {
+        const session = doc.data();
+        if (session.user_id === "PXDYJCKtnULevYyzaNgp") {
+          session.exercises.forEach(({ exercise_id, sets }) => {
+            sets.forEach((set) => {
+              const volume = set.weight * set.reps;
+              if (
+                !maxVolumeSets[exercise_id] ||
+                volume > maxVolumeSets[exercise_id].volume
+              ) {
+                maxVolumeSets[exercise_id] = {
+                  id: Math.random().toString(),
+                  weight: set.weight,
+                  reps: set.reps,
+                  rpe: set.rpe || 0,
+                  rating: set.set_rating || 0,
+                  completed: false,
+                  volume: volume,
+                };
+              }
+            });
+          });
+        }
+      });
+
+      Object.keys(exerciseMap).forEach((exerciseId) => {
+        if (maxVolumeSets[exerciseId]) {
+          setsMap[exerciseId] = [maxVolumeSets[exerciseId]];
+        } else {
+          setsMap[exerciseId] = [
+            {
+              id: Math.random().toString(),
+              weight: 0,
+              reps: 0,
+              rpe: 0,
+              rating: 0,
+              completed: false,
+            },
+          ];
         }
       });
 
@@ -85,33 +163,10 @@ const ExercisesScreen = () => {
     }));
   };
 
-  const addSet = (exerciseId) => {
-    const newSet = {
-      id: Math.random().toString(),
-      weight: 0,
-      reps: 0,
-      rpe: 0,
-      rating: 0,
-      completed: false,
-    };
-
-    setExerciseSets((prevSets) => ({
-      ...prevSets,
-      [exerciseId]: [...prevSets[exerciseId], newSet],
-    }));
-  };
-
-  const deleteSet = (exerciseId, index) => {
-    setExerciseSets((prevSets) => ({
-      ...prevSets,
-      [exerciseId]: prevSets[exerciseId].filter((_, i) => i !== index),
-    }));
-  };
-
   const handleFinish = async () => {
     try {
       const sessionRef = collection(db, "sessions");
-  
+
       const sessionData = {
         user_id: "PXDYJCKtnULevYyzaNgp",
         workout_id: workoutId,
@@ -126,17 +181,15 @@ const ExercisesScreen = () => {
           })),
         })),
       };
-  
+
       await addDoc(sessionRef, sessionData);
       console.log("Session saved successfully!");
-  
-      // Navigate back or show confirmation
+
       router.push("/workout");
     } catch (error) {
       console.error("Error saving session:", error);
     }
   };
-  
 
   if (!workoutData) return <Text>Loading...</Text>;
 
@@ -144,10 +197,16 @@ const ExercisesScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{workoutData.name}</Text>
-        <Pressable style={styles.finishButton} onPress={handleFinish}>
-          <Text style={styles.finishButtonText}>Finish</Text>
-        </Pressable>
+        <View style={styles.buttonContainer}>
+          <Pressable style={styles.backButton} onPress={() => router.push("/workout")}>
+            <Text style={styles.backButtonText}>Back</Text>
+          </Pressable>
+          <Pressable style={styles.finishButton} onPress={handleFinish}>
+            <Text style={styles.finishButtonText}>Finish</Text>
+          </Pressable>
+        </View>
       </View>
+
       <FlatList
         data={workoutData.exercises}
         keyExtractor={(id) => id}
@@ -240,9 +299,6 @@ const ExercisesScreen = () => {
         }}
       />
 
-      <Pressable style={styles.backButton} onPress={() => router.push("/workout")}>
-        <Text style={styles.buttonText}>Back</Text>
-      </Pressable>
     </View>
   );
 };
@@ -252,7 +308,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#121212",
     padding: 10,
-    paddingTop: 30,
+    paddingTop: 50,
   },
   header: {
     flexDirection: "row",
@@ -264,16 +320,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
-  },
-  finishButton: {
-    backgroundColor: color,
-    padding: 8,
-    borderRadius: 5,
-  },
-  finishButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
   },
   exerciseCard: {
     backgroundColor: "#1e1e1e",
@@ -319,17 +365,34 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   addButtonText: { fontSize: 16, fontWeight: "bold", color: "#fff" },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 10, // Add space between buttons
+  },
   backButton: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 8,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButtonText: {
+    color: color, // Use the main theme color for text
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  finishButton: {
+    flex: 1,
     backgroundColor: color,
     padding: 8,
     borderRadius: 5,
-    alignSelf: "center",
-    marginTop: 15,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  buttonText: {
+  finishButtonText: {
     color: "white",
-    fontSize: 14,
-    textAlign: "center",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
