@@ -1,23 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  CheckBox,
-} from "react-native";
+import { View, Text, FlatList, TextInput, Pressable, StyleSheet, CheckBox,} from "react-native";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "@/config/firebaseConfig";
-import {
-  doc,
-  getDoc,
-  addDoc,
-  collection,
-  getDocs,
-} from "firebase/firestore";
+import {doc, getDoc, addDoc, collection, getDocs,} from "firebase/firestore";
 
 const themeColor = "#42307e";
 

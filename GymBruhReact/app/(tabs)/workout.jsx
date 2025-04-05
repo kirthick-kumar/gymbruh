@@ -6,14 +6,14 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import { db } from "../../config/firebaseConfig";
 import { getDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from 'react';
-import { useAuth } from '../AuthContext'; // <-- import auth context
+import { useAuth } from '../AuthContext';
 
 const color = '#42307e';
 
 const MyComponent = () => {
   const router = useRouter();
   const [workouts, setWorkouts] = useState([]);
-  const { user } = useAuth(); // <-- get current user from context
+  const { user } = useAuth();
 
   useEffect(() => {
     if (user?.id) fetchWorkouts(user.id);
@@ -92,9 +92,11 @@ const MyComponent = () => {
           >
             <Card.Content style={styles.cardBody}>
               <View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.muscleScroll}>
                 <Text style={[styles.cardText, { color: index % 2 === 0 ? 'white' : color }]}>
                   {workout.name}
                 </Text>
+              </ScrollView>
 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.muscleScroll}>
                   <Text style={{ color: index % 2 === 0 ? 'white' : color, fontSize: 16 }}>
@@ -127,7 +129,7 @@ const MyComponent = () => {
         style={[styles.addButton, { backgroundColor: 'white', marginTop: 20 }]}
         onPress={() => router.push('/add-exercise/add-exercise')}
       >
-        <Text style={{ color: color, fontSize: 20, fontWeight: '600' }}>Add Exercise</Text>
+        <Text style={{ color: color, fontSize: 20, fontWeight: '600' }}>Exercises</Text>
       </Pressable>
     </SafeAreaView>
   );
