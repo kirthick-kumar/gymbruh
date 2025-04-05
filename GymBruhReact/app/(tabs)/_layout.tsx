@@ -32,28 +32,28 @@ export default function TabLayout() {
         name="workout"
         options={{
           title: 'Workouts',
-          tabBarIcon: () => <Ionicons name='barbell-outline' size={29} color={color}/>,
+          tabBarIcon: ({ focused }) => (<Ionicons name="barbell-outline" size={focused ? 34 : 29} color={focused ? 'white' : color} />),
         }}
       />
       <Tabs.Screen
         name="leaderboard"
         options={{
           title: 'Leaderboard',
-          tabBarIcon: () => <Ionicons name='list-outline' size={29} color={color}/>,
+          tabBarIcon: ({ focused }) => (<Ionicons name="list-outline" size={focused ? 34 : 29} color={focused ? '#FFD700' : color} />),
         }}
       />
       <Tabs.Screen
         name="diet"
         options={{
           title: 'Diet',
-          tabBarIcon: () => <Ionicons name='pizza-outline' size={29} color={color}/>,
+          tabBarIcon: ({ focused }) => (<Ionicons name="pizza-outline" size={focused ? 34 : 29} color={focused ? 'brown' : color} />),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: () => <Ionicons name='person-outline' size={29} color={color}/>,
+          tabBarIcon: ({ focused }) => <Ionicons name='person-outline' size={focused ? 34 : 29} color={focused ? 'white' : color}/>,
         }}
       />
     </Tabs>

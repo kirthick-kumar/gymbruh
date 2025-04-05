@@ -1,40 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Switch, Image, ScrollView, Alert, StyleSheet } from "react-native";
-import { useLocalSearchParams, useRouter } from 'expo-router'; // Get params (token) from navigation
-
+import { useRouter } from 'expo-router';
 import { useAuth } from '../AuthContext'; 
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/config/firebaseConfig'; // adjust the path if needed
 
 const ProfileScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [userData, setUserData] = useState(null);
   const router = useRouter();
-  const { token } = useAuth(); 
+  const { user } = useAuth(); // assumes user contains the Firebase user object
 
-  const handleProfile = async () => {
+  const fetchUserData = async () => {
     try {
-      const response = await fetch('http://localhost:8080/profile', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      if (!user || !user.id) {
+        console.log("Error", "User not logged in");
+        return;
+      }
+      
+      const userRef = doc(db, 'users', user.id);
+      const userSnap = await getDoc(userRef);
 
-      const data = await response.json();
-      console.log(data.msg);
-      if (response.ok) {
-        setUserData(data.user); // Store received data in state
+      if (userSnap.exists()) {
+        setUserData(userSnap.data());
       } else {
-        Alert.alert("Error", data.message || "Failed to fetch profile");
+        Alert.alert("Error", "User not found");
       }
     } catch (error) {
-      console.error("Profile fetch error:", error);
-      Alert.alert("Error", "Something went wrong");
+      console.error("Error fetching user data:", error);
+      Alert.alert("Error", "Something went wrong while fetching profile");
     }
   };
 
-  // Fetch profile data when the component mounts
   useEffect(() => {
-    handleProfile();
+    fetchUserData();    
   }, []);
 
   return (
@@ -44,13 +43,11 @@ const ProfileScreen = () => {
         <Text style={[styles.sectionTitle, { fontSize: 30, alignSelf: 'center' }]}>
           {userData?.username || "N/A"}
         </Text>
-
-      {/* User Information Section */}
         <Text style={styles.userDetail}>Age: {userData?.age || "N/A"}</Text>
         <Text style={styles.userDetail}>Weight: {userData?.weight || "N/A"} kg</Text>
         <Text style={styles.userDetail}>Height: {userData?.height || "N/A"} cm</Text>
-        <Text style={styles.userDetail}>Goal: Weight {userData?.goal || "Weight Maintain"}</Text>
-        
+        <Text style={styles.userDetail}>Goal: Weight {userData?.goal || "Maintain"}</Text>
+
         <View style={styles.switchContainer}>
           <Text style={styles.userDetail}>Notifications</Text>
           <Switch
@@ -80,7 +77,6 @@ const ProfileScreen = () => {
         <Text style={styles.sectionTitle}>Support</Text>
       </TouchableOpacity>
 
-      {/* Logout */}
       <TouchableOpacity style={[styles.section, styles.logoutSection]} onPress={() => router.push('/')}>
         <Text style={[styles.sectionTitle, styles.logoutText]}>Logout</Text>
       </TouchableOpacity>
@@ -95,7 +91,6 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // marginTop: 30,
     backgroundColor: "#e6e2e2",
   },
   image: {

@@ -5,15 +5,21 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setTokenState] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [user, setUserState] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadToken = async () => {
+    const loadAuthData = async () => {
       const storedToken = await AsyncStorage.getItem("token");
+      const storedUser = await AsyncStorage.getItem("user");
+
       if (storedToken) setTokenState(storedToken);
-      setLoading(false); // Set loading to false once token is loaded
+      if (storedUser) setUserState(JSON.parse(storedUser));
+
+      setLoading(false);
     };
-    loadToken();
+
+    loadAuthData();
   }, []);
 
   const setToken = async (newToken) => {
@@ -21,18 +27,26 @@ export const AuthProvider = ({ children }) => {
     await AsyncStorage.setItem("token", newToken);
   };
 
-  const logout = async () => {
-    setTokenState(null);
-    await AsyncStorage.removeItem("token");
+  const setUser = async (userData) => {
+    setUserState(userData);
+    await AsyncStorage.setItem("user", JSON.stringify(userData));
   };
 
-  if (loading) return null; // Prevent rendering until token is loaded
+  const logout = async () => {
+    setTokenState(null);
+    setUserState(null);
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
+  };
+
+  if (loading) return null;
 
   return (
-    <AuthContext.Provider value={{ token, setToken, logout }}>
+    <AuthContext.Provider value={{ token, setToken, logout, user, setUser }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
+  

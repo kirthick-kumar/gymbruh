@@ -5,24 +5,26 @@ import { Text, TextInput, Button, Chip, Dialog, Portal, Checkbox } from 'react-n
 import { db } from '@/config/firebaseConfig';
 import { collection, addDoc, doc, updateDoc, getDoc, arrayUnion, getDocs } from "firebase/firestore";
 import * as Notifications from 'expo-notifications';
+import { useAuth } from '../AuthContext'; // ✅ import useAuth
 
 const color = '#42307e';
 const muscles = ['Chest', 'Shoulder', 'Triceps', 'Back', 'Biceps', 'Legs', 'Forearms', 'Abs'];
 
 const AddWorkout = () => {
-  const { workoutId } = useLocalSearchParams(); // Get workoutId if editing
+  const { workoutId } = useLocalSearchParams();
+  const navigation = useNavigation();
+  const { user } = useAuth(); // ✅ get user from context
+
   const [workoutName, setWorkoutName] = useState('');
   const [selectedMuscles, setSelectedMuscles] = useState([]);
-  const [selectedExercises, setSelectedExercises] = useState([]); // Store exercise IDs
-  const [exercises, setExercises] = useState([]); // Store exercises from Firestore
+  const [selectedExercises, setSelectedExercises] = useState([]);
+  const [exercises, setExercises] = useState([]);
   const [dialogVisible, setDialogVisible] = useState(false);
-  
-  const navigation = useNavigation();
-  
+
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
     fetchExercises();
-    if (workoutId) loadWorkoutData(workoutId); // Load existing workout if editing
+    if (workoutId) loadWorkoutData(workoutId);
   }, [navigation, workoutId]);
 
   useEffect(() => {
@@ -59,38 +61,41 @@ const AddWorkout = () => {
   };
 
   const toggleMuscle = (muscle) => {
-    setSelectedMuscles((prev) =>
-      prev.includes(muscle) ? prev.filter((m) => m !== muscle) : [...prev, muscle]
+    setSelectedMuscles(prev =>
+      prev.includes(muscle) ? prev.filter(m => m !== muscle) : [...prev, muscle]
     );
   };
 
   const toggleExercise = (exerciseId) => {
-    setSelectedExercises((prev) =>
-      prev.includes(exerciseId) ? prev.filter((id) => id !== exerciseId) : [...prev, exerciseId]
+    setSelectedExercises(prev =>
+      prev.includes(exerciseId) ? prev.filter(id => id !== exerciseId) : [...prev, exerciseId]
     );
   };
 
   const handleSubmit = async () => {
-    const workout = { name: workoutName, muscles: selectedMuscles, exercises: selectedExercises };
+    if (!user?.id) {
+      console.error("No user ID found.");
+      return;
+    }
+
+    const workout = {
+      name: workoutName,
+      muscles: selectedMuscles,
+      exercises: selectedExercises
+    };
 
     try {
       if (workoutId) {
-        // Update existing workout
         const workoutRef = doc(db, "workouts", workoutId);
         await updateDoc(workoutRef, workout);
       } else {
-        // Add new workout
         const workoutRef = await addDoc(collection(db, "workouts"), workout);
-        
-        // Hardcoded userId (update later)
-        const userId = "PXDYJCKtnULevYyzaNgp";
-        const userRef = doc(db, "users", userId);
+        const userRef = doc(db, "users", user.id); // ✅ use user.id here
         await updateDoc(userRef, {
           createdWorkouts: arrayUnion(workoutRef.id)
         });
       }
 
-      // Send notification
       await Notifications.scheduleNotificationAsync({
         content: {
           title: workoutId ? "Workout Updated" : "Workout Saved",
@@ -111,23 +116,19 @@ const AddWorkout = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>{workoutId ? "Edit Workout" : "Add Workout"}</Text>
-
-        {/* Workout Name Input */}
         <TextInput
           label="Workout Name"
           value={workoutName}
           onChangeText={setWorkoutName}
           style={styles.input}
-          placeholderTextColor="#888"
           textColor="#fff"
           theme={{ colors: { text: '#fff' } }}
         />
 
-        {/* Muscles Section */}
         <View style={styles.section}>
           <Text style={styles.label}>Muscles Involved</Text>
           <View style={styles.chipContainer}>
-            {muscles.map((muscle) => (
+            {muscles.map(muscle => (
               <Chip
                 key={muscle}
                 onPress={() => toggleMuscle(muscle)}
@@ -140,32 +141,25 @@ const AddWorkout = () => {
           </View>
         </View>
 
-        {/* Exercises Section */}
         <View style={styles.section}>
           <Text style={styles.label}>Exercises</Text>
-          <Button 
-            mode="contained" 
-            onPress={() => setDialogVisible(true)} 
+          <Button
+            mode="contained"
+            onPress={() => setDialogVisible(true)}
             style={styles.selectButton}
             labelStyle={styles.selectButtonText}
           >
             Select Exercises
           </Button>
 
-          {/* Selected Exercises */}
           <View style={styles.selectedItemsContainer}>
-            {selectedExercises.map((exerciseId) => {
-              const exercise = exercises.find((ex) => ex.id === exerciseId);
-              return exercise ? (
-                <Chip key={exerciseId} style={styles.chip}>
-                  {exercise.name}
-                </Chip>
-              ) : null;
+            {selectedExercises.map((id) => {
+              const exercise = exercises.find(e => e.id === id);
+              return exercise ? <Chip key={id} style={styles.chip}>{exercise.name}</Chip> : null;
             })}
           </View>
         </View>
 
-        {/* Exercise Dialog */}
         <Portal>
           <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)} style={styles.dialog}>
             <Dialog.Title style={styles.dialogTitle}>Select Exercises</Dialog.Title>
@@ -191,21 +185,15 @@ const AddWorkout = () => {
           </Dialog>
         </Portal>
 
-        {/* Submit Button */}
-        <Button 
-          mode="contained" 
-          onPress={handleSubmit} 
-          style={styles.submitButton}
-          labelStyle={styles.submitButtonText}
-        >
+        <Button mode="contained" onPress={handleSubmit} style={styles.submitButton} labelStyle={styles.submitButtonText}>
           {workoutId ? "Update Workout" : "Save Workout"}
         </Button>
 
-        <Button 
-          mode="contained" 
-          onPress={() => router.push('/workout')} 
-          style={[styles.submitButton, {backgroundColor: 'white'}]}
-          labelStyle={[styles.submitButtonText, {color: color}]}
+        <Button
+          mode="contained"
+          onPress={() => router.push('/workout')}
+          style={[styles.submitButton, { backgroundColor: 'white' }]}
+          labelStyle={[styles.submitButtonText, { color }]}
         >
           Back
         </Button>

@@ -4,22 +4,23 @@ import Animated, { FadeInUp, FadeOut } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { db } from "../../config/firebaseConfig";
-import { getDoc, doc, deleteDoc } from "firebase/firestore";
+import { getDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from 'react';
+import { useAuth } from '../AuthContext'; // <-- import auth context
 
 const color = '#42307e';
 
 const MyComponent = () => {
   const router = useRouter();
   const [workouts, setWorkouts] = useState([]);
+  const { user } = useAuth(); // <-- get current user from context
 
   useEffect(() => {
-    fetchWorkouts();
-  }, []);
+    if (user?.id) fetchWorkouts(user.id);
+  }, [user]);
 
-  const fetchWorkouts = async () => {
+  const fetchWorkouts = async (userId) => {
     try {
-      const userId = "PXDYJCKtnULevYyzaNgp";
       const userRef = doc(db, "users", userId);
       const userSnap = await getDoc(userRef);
 
@@ -37,21 +38,37 @@ const MyComponent = () => {
 
         setWorkouts(fetchedWorkouts);
       }
-    } 
-    catch (error) {
+    } catch (error) {
       console.error("Error fetching workouts:", error);
     }
   };
 
+  const handleViewSessions = (workoutId) => {
+    router.push({ pathname: '/sessions/sessions', params: { workoutId } });
+  };
+  
   const handleEdit = (workoutId) => {
     router.push(`/addworkout/add-workout?workoutId=${workoutId}`);
   };
-  
+
   const handleDelete = async (workoutId) => {
     try {
+      const userId = user?.id;
+      if (!userId) return;
+
       await deleteDoc(doc(db, "workouts", workoutId));
-      setWorkouts((prevWorkouts) => prevWorkouts.filter((workout) => workout.id !== workoutId));
-      console.log("Workout deleted successfully!");
+
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const updatedWorkouts = (userData.createdWorkouts || []).filter(id => id !== workoutId);
+        await updateDoc(userRef, { createdWorkouts: updatedWorkouts });
+      }
+
+      setWorkouts((prevWorkouts) => prevWorkouts.filter((w) => w.id !== workoutId));
+      console.log("Workout deleted successfully from workouts and user collection!");
     } catch (error) {
       console.error("Error deleting workout:", error);
     }
@@ -60,14 +77,17 @@ const MyComponent = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Workouts</Text>
+
       {workouts.map((workout, index) => (
-        <Animated.View 
-          key={workout.id} 
-          entering={FadeInUp.delay(index * 200)} 
+        <Animated.View
+          key={workout.id}
+          entering={FadeInUp.delay(index * 200)}
           exiting={FadeOut}
         >
-          <Pressable 
-            onPress={() => router.push({ pathname: "/exercises/exercises", params: { workoutId: workout.id } })} 
+          <Pressable
+            onPress={() =>
+              router.push({ pathname: "/exercises/exercises", params: { workoutId: workout.id } })
+            }
             style={[styles.card, { backgroundColor: index % 2 === 0 ? color : 'white' }]}
           >
             <Card.Content style={styles.cardBody}>
@@ -88,7 +108,10 @@ const MyComponent = () => {
                   <Icon name="edit" size={20} color={index % 2 === 0 ? 'white' : color} />
                 </Pressable>
                 <Pressable onPress={() => handleDelete(workout.id)} style={styles.iconButton}>
-                  <Icon name="trash-alt" size={20} color={index % 2 == 0 ? 'white' : color} />
+                  <Icon name="trash-alt" size={20} color={index % 2 === 0 ? 'white' : color} />
+                </Pressable>
+                <Pressable onPress={() => handleViewSessions(workout.id)} style={styles.iconButton}>
+                  <Icon name="history" size={20} color={index % 2 === 0 ? 'white' : color} />
                 </Pressable>
               </View>
             </Card.Content>
@@ -96,14 +119,12 @@ const MyComponent = () => {
         </Animated.View>
       ))}
 
-      <Pressable
-        style={styles.addButton}
-        onPress={() => router.push('/addworkout/add-workout')}
-      >
+      <Pressable style={styles.addButton} onPress={() => router.push('/addworkout/add-workout')}>
         <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600' }}>Add Workout</Text>
       </Pressable>
+
       <Pressable
-        style={[styles.addButton, {backgroundColor: 'white', marginTop: 20}]}
+        style={[styles.addButton, { backgroundColor: 'white', marginTop: 20 }]}
         onPress={() => router.push('/add-exercise/add-exercise')}
       >
         <Text style={{ color: color, fontSize: 20, fontWeight: '600' }}>Add Exercise</Text>

@@ -9,6 +9,7 @@ import {
   CheckBox,
 } from "react-native";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "@/config/firebaseConfig";
 import {
   doc,
@@ -18,67 +19,48 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-const color = "#42307e";
+const themeColor = "#42307e";
 
 const ExercisesScreen = () => {
   const { workoutId } = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
 
+  const [userId, setUserId] = useState(null);
   const [workoutData, setWorkoutData] = useState(null);
   const [exerciseDetails, setExerciseDetails] = useState({});
   const [exerciseSets, setExerciseSets] = useState({});
 
   useEffect(() => {
-    navigation.setOptions({ headerShown: false });
-    fetchWorkout();
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        console.log("User not authenticated");
+        router.replace("/login"); // or wherever your login screen is
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
-  
-  const addSet = (exerciseId) => {
-    setExerciseSets((prevSets) => {
-      const prevExerciseSets = prevSets[exerciseId] || [];
-      const lastSet = prevExerciseSets[prevExerciseSets.length - 1] || {
-        weight: 0,
-        reps: 0,
-        rpe: 0,
-        rating: 0,
-        completed: false,
-      };
-  
-      const newSet = {
-        ...lastSet,
-        id: Math.random().toString(),
-        completed: false,
-      };
-  
-      return {
-        ...prevSets,
-        [exerciseId]: [...prevExerciseSets, newSet],
-      };
-    });
-  };
-  
-  
-  const deleteSet = (exerciseId, index) => {
-    setExerciseSets((prevSets) => ({
-      ...prevSets,
-      [exerciseId]: prevSets[exerciseId].filter((_, i) => i !== index),
-    }));
-  };
+  useEffect(() => {
+    if (!userId) return;
+    navigation.setOptions({ headerShown: false });
+    fetchWorkout();
+  }, [userId]);
 
   const fetchWorkout = async () => {
     try {
       const workoutRef = doc(db, "workouts", workoutId);
       const workoutSnap = await getDoc(workoutRef);
 
-      if (workoutSnap.exists()) {
-        const workout = workoutSnap.data();
-        setWorkoutData(workout);
-        fetchExerciseDetails(workout.exercises);
-      } else {
-        console.log("Workout not found!");
-      }
+      if (!workoutSnap.exists()) return console.log("Workout not found!");
+
+      const workout = workoutSnap.data();
+      setWorkoutData(workout);
+      fetchExerciseDetails(workout.exercises);
     } catch (error) {
       console.error("Error fetching workout:", error);
     }
@@ -87,64 +69,59 @@ const ExercisesScreen = () => {
   const fetchExerciseDetails = async (exerciseIds) => {
     try {
       const exercisesRef = collection(db, "exercises");
-      const querySnapshot = await getDocs(exercisesRef);
-
-      let exerciseMap = {};
-      let setsMap = {};
-
-      querySnapshot.forEach((doc) => {
-        if (exerciseIds.includes(doc.id)) {
-          const exercise = doc.data();
-          exerciseMap[doc.id] = { id: doc.id, ...exercise };
-          setsMap[doc.id] = [];
-        }
-      });
+      const exercisesSnapshot = await getDocs(exercisesRef);
 
       const sessionsRef = collection(db, "sessions");
       const sessionsSnapshot = await getDocs(sessionsRef);
 
+      let exerciseMap = {};
+      let setsMap = {};
       let maxVolumeSets = {};
 
-      sessionsSnapshot.forEach((doc) => {
-        const session = doc.data();
-        if (session.user_id === "PXDYJCKtnULevYyzaNgp") {
-          session.exercises.forEach(({ exercise_id, sets }) => {
-            sets.forEach((set) => {
-              const volume = set.weight * set.reps;
-              if (
-                !maxVolumeSets[exercise_id] ||
-                volume > maxVolumeSets[exercise_id].volume
-              ) {
-                maxVolumeSets[exercise_id] = {
-                  id: Math.random().toString(),
-                  weight: set.weight,
-                  reps: set.reps,
-                  rpe: set.rpe || 0,
-                  rating: set.set_rating || 0,
-                  completed: false,
-                  volume: volume,
-                };
-              }
-            });
-          });
+      exercisesSnapshot.forEach((doc) => {
+        if (exerciseIds.includes(doc.id)) {
+          const data = doc.data();
+          exerciseMap[doc.id] = { id: doc.id, ...data };
+          setsMap[doc.id] = [];
         }
       });
 
-      Object.keys(exerciseMap).forEach((exerciseId) => {
-        if (maxVolumeSets[exerciseId]) {
-          setsMap[exerciseId] = [maxVolumeSets[exerciseId]];
-        } else {
-          setsMap[exerciseId] = [
-            {
-              id: Math.random().toString(),
-              weight: 0,
-              reps: 0,
-              rpe: 0,
-              rating: 0,
-              completed: false,
-            },
-          ];
-        }
+      sessionsSnapshot.forEach((doc) => {
+        const session = doc.data();
+        if (session.user_id !== userId) return;
+
+        session.exercises.forEach(({ exercise_id, sets }) => {
+          sets.forEach((set) => {
+            const volume = set.weight * set.reps;
+            if (
+              !maxVolumeSets[exercise_id] ||
+              volume > maxVolumeSets[exercise_id].volume
+            ) {
+              maxVolumeSets[exercise_id] = {
+                id: Math.random().toString(),
+                weight: set.weight,
+                reps: set.reps,
+                rpe: set.rpe || 0,
+                rating: set.set_rating || 0,
+                completed: false,
+                volume,
+              };
+            }
+          });
+        });
+      });
+
+      Object.keys(exerciseMap).forEach((id) => {
+        setsMap[id] = [
+          maxVolumeSets[id] || {
+            id: Math.random().toString(),
+            weight: 0,
+            reps: 0,
+            rpe: 0,
+            rating: 0,
+            completed: false,
+          },
+        ];
       });
 
       setExerciseDetails(exerciseMap);
@@ -154,10 +131,32 @@ const ExercisesScreen = () => {
     }
   };
 
+  const addSet = (exerciseId) => {
+    setExerciseSets((prev) => {
+      const current = prev[exerciseId] || [];
+      const last = current[current.length - 1] || {
+        weight: 0,
+        reps: 0,
+        rpe: 0,
+        rating: 0,
+        completed: false,
+      };
+      const newSet = { ...last, id: Math.random().toString(), completed: false };
+      return { ...prev, [exerciseId]: [...current, newSet] };
+    });
+  };
+
+  const deleteSet = (exerciseId, index) => {
+    setExerciseSets((prev) => ({
+      ...prev,
+      [exerciseId]: prev[exerciseId].filter((_, i) => i !== index),
+    }));
+  };
+
   const handleSetChange = (exerciseId, setId, field, value) => {
-    setExerciseSets((prevSets) => ({
-      ...prevSets,
-      [exerciseId]: prevSets[exerciseId].map((set) =>
+    setExerciseSets((prev) => ({
+      ...prev,
+      [exerciseId]: prev[exerciseId].map((set) =>
         set.id === setId ? { ...set, [field]: value } : set
       ),
     }));
@@ -168,11 +167,11 @@ const ExercisesScreen = () => {
       const sessionRef = collection(db, "sessions");
 
       const sessionData = {
-        user_id: "PXDYJCKtnULevYyzaNgp",
+        user_id: userId,
         workout_id: workoutId,
         date: new Date(),
-        exercises: Object.entries(exerciseSets).map(([exerciseId, sets]) => ({
-          exercise_id: exerciseId,
+        exercises: Object.entries(exerciseSets).map(([id, sets]) => ({
+          exercise_id: id,
           sets: sets.map(({ weight, reps, rpe, rating }) => ({
             weight,
             reps,
@@ -183,15 +182,14 @@ const ExercisesScreen = () => {
       };
 
       await addDoc(sessionRef, sessionData);
-      console.log("Session saved successfully!");
-
+      console.log("Session saved!");
       router.push("/workout");
     } catch (error) {
       console.error("Error saving session:", error);
     }
   };
 
-  if (!workoutData) return <Text>Loading...</Text>;
+  if (!workoutData) return <Text style={{ color: "#fff", padding: 20 }}>Loading...</Text>;
 
   return (
     <View style={styles.container}>
@@ -220,12 +218,9 @@ const ExercisesScreen = () => {
 
               <View style={styles.table}>
                 <View style={styles.tableHeader}>
-                  <Text style={styles.headerText}>SET</Text>
-                  <Text style={styles.headerText}>KG</Text>
-                  <Text style={styles.headerText}>REPS</Text>
-                  <Text style={styles.headerText}>RPE</Text>
-                  <Text style={styles.headerText}>Rating</Text>
-                  <Text style={styles.headerText}>✔</Text>
+                  {["SET", "KG", "REPS", "RPE", "Rating", "✔"].map((label, i) => (
+                    <Text key={i} style={styles.headerText}>{label}</Text>
+                  ))}
                 </View>
 
                 <FlatList
@@ -238,46 +233,18 @@ const ExercisesScreen = () => {
                           <Text style={styles.cell}>{index + 1}</Text>
                         </Pressable>
                       </View>
-                      <View style={styles.column}>
-                        <TextInput
-                          style={styles.input}
-                          value={String(set.weight)}
-                          keyboardType="numeric"
-                          onChangeText={(value) =>
-                            handleSetChange(exercise.id, set.id, "weight", Number(value))
-                          }
-                        />
-                      </View>
-                      <View style={styles.column}>
-                        <TextInput
-                          style={styles.input}
-                          value={String(set.reps)}
-                          keyboardType="numeric"
-                          onChangeText={(value) =>
-                            handleSetChange(exercise.id, set.id, "reps", Number(value))
-                          }
-                        />
-                      </View>
-                      <View style={styles.column}>
-                        <TextInput
-                          style={styles.input}
-                          value={String(set.rpe)}
-                          keyboardType="numeric"
-                          onChangeText={(value) =>
-                            handleSetChange(exercise.id, set.id, "rpe", Number(value))
-                          }
-                        />
-                      </View>
-                      <View style={styles.column}>
-                        <TextInput
-                          style={styles.input}
-                          value={String(set.rating)}
-                          keyboardType="numeric"
-                          onChangeText={(value) =>
-                            handleSetChange(exercise.id, set.id, "rating", Number(value))
-                          }
-                        />
-                      </View>
+                      {["weight", "reps", "rpe", "rating"].map((field, i) => (
+                        <View key={i} style={styles.column}>
+                          <TextInput
+                            style={styles.input}
+                            value={String(set[field])}
+                            keyboardType="numeric"
+                            onChangeText={(value) =>
+                              handleSetChange(exercise.id, set.id, field, Number(value))
+                            }
+                          />
+                        </View>
+                      ))}
                       <View style={styles.column}>
                         <CheckBox
                           value={set.completed}
@@ -298,7 +265,6 @@ const ExercisesScreen = () => {
           );
         }}
       />
-
     </View>
   );
 };
@@ -321,14 +287,50 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
   },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  backButton: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 8,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  backButtonText: {
+    color: themeColor,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  finishButton: {
+    flex: 1,
+    backgroundColor: themeColor,
+    padding: 8,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  finishButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   exerciseCard: {
     backgroundColor: "#1e1e1e",
     padding: 10,
     marginBottom: 8,
     borderRadius: 8,
   },
-  exerciseName: { fontSize: 20, fontWeight: "bold", color: "#fff" },
-  tableHeader: { flexDirection: "row", backgroundColor: color, padding: 6 },
+  exerciseName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: themeColor,
+    padding: 6,
+  },
   headerText: {
     flex: 1,
     textAlign: "center",
@@ -336,15 +338,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
-  row: { flexDirection: "row", padding: 6, alignItems: "center" },
+  row: {
+    flexDirection: "row",
+    padding: 6,
+    alignItems: "center",
+  },
   column: {
     flex: 1,
-    alignItems: "center", // Center align items in each column
+    alignItems: "center",
   },
   cell: {
-    width: 30, // Set a fixed width for the set number field
+    width: 30,
     textAlign: "center",
-    fontSize: 16, // Keep the font size the same
+    fontSize: 16,
     color: "#fff",
   },
   input: {
@@ -355,45 +361,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingVertical: 4,
     margin: 2,
-    maxWidth: 50, // Set a max width for smaller screens
+    maxWidth: 50,
   },
   addButton: {
-    backgroundColor: color,
+    backgroundColor: themeColor,
     padding: 8,
     borderRadius: 5,
     marginTop: 8,
     alignSelf: "center",
   },
-  addButtonText: { fontSize: 16, fontWeight: "bold", color: "#fff" },
-  buttonContainer: {
-    flexDirection: "row",
-    gap: 10, // Add space between buttons
-  },
-  backButton: {
-    flex: 1,
-    backgroundColor: "white",
-    padding: 8,
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backButtonText: {
-    color: color, // Use the main theme color for text
+  addButtonText: {
     fontSize: 16,
     fontWeight: "bold",
-  },
-  finishButton: {
-    flex: 1,
-    backgroundColor: color,
-    padding: 8,
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  finishButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+    color: "#fff",
   },
 });
 
