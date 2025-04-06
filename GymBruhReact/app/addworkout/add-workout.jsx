@@ -2,22 +2,43 @@ import { useState, useEffect } from 'react';
 import { router, useNavigation } from 'expo-router';
 import { SafeAreaView, StyleSheet, View, ScrollView } from 'react-native';
 import { Text, TextInput, Button, Chip, Dialog, Portal, Checkbox } from 'react-native-paper';
+import { db } from '@/config/firebaseConfig';
+import { collection, addDoc, doc, updateDoc, arrayUnion, getDocs } from "firebase/firestore";
+import * as Notifications from 'expo-notifications';
 
 const color = '#42307e';
-
 const muscles = ['Chest', 'Shoulder', 'Triceps', 'Back', 'Biceps', 'Legs', 'Forearms', 'Abs'];
-const exercises = ['Bench Press', 'Squats', 'Deadlift', 'Pull-Ups', 'Tricep Dips', 'Incline Dumbbell Press'];
 
 const AddWorkout = () => {
   const [workoutName, setWorkoutName] = useState('');
   const [selectedMuscles, setSelectedMuscles] = useState([]);
-  const [selectedExercises, setSelectedExercises] = useState([]);
+  const [selectedExercises, setSelectedExercises] = useState([]); // Store exercise IDs
+  const [exercises, setExercises] = useState([]); // Store exercises from Firestore
   const [dialogVisible, setDialogVisible] = useState(false);
   
   const navigation = useNavigation();
+  
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
+    fetchExercises(); // Fetch exercises when component mounts
   }, [navigation]);
+
+  useEffect(() => {
+    Notifications.requestPermissionsAsync();
+  }, []);
+
+  const fetchExercises = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "exercises"));
+      const exerciseList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        name: doc.data().name
+      }));
+      setExercises(exerciseList);
+    } catch (error) {
+      console.error("Error fetching exercises:", error);
+    }
+  };
 
   const toggleMuscle = (muscle) => {
     setSelectedMuscles((prev) =>
@@ -25,15 +46,42 @@ const AddWorkout = () => {
     );
   };
 
-  const toggleExercise = (exercise) => {
+  const toggleExercise = (exerciseId) => {
     setSelectedExercises((prev) =>
-      prev.includes(exercise) ? prev.filter((e) => e !== exercise) : [...prev, exercise]
+      prev.includes(exerciseId) ? prev.filter((id) => id !== exerciseId) : [...prev, exerciseId]
     );
   };
 
-  const handleSubmit = () => {
-    console.log({ workoutName, selectedMuscles, selectedExercises });
+  const handleSubmit = async () => {
+    const workout = { name: workoutName, muscles: selectedMuscles, exercises: selectedExercises };
+    console.log(workout);
+  
+    try {
+      const workoutRef = await addDoc(collection(db, "workouts"), workout);
+      
+      // Hardcoded userId, update later
+      const userId = "PXDYJCKtnULevYyzaNgp";
+      const userRef = doc(db, "users", userId); 
+      await updateDoc(userRef, {
+        createdWorkouts: arrayUnion(workoutRef.id)
+      });
+      
+      // Send notification
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Workout Saved",
+          body: "Your workout has been saved successfully!",
+          sound: true,
+        },
+        trigger: null,
+      });
+    } catch (error) {
+      console.error("Error adding workout:", error);
+    }
+
+    router.push('/workout');
   };
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,6 +95,8 @@ const AddWorkout = () => {
           onChangeText={setWorkoutName}
           style={styles.input}
           placeholderTextColor="#888"
+          textColor="#fff"
+          theme={{ colors: { text: '#fff' } }}
         />
 
         {/* Muscles Section */}
@@ -80,11 +130,14 @@ const AddWorkout = () => {
 
           {/* Selected Exercises */}
           <View style={styles.selectedItemsContainer}>
-            {selectedExercises.map((exercise) => (
-              <Chip key={exercise} style={styles.chip}>
-                {exercise}
-              </Chip>
-            ))}
+            {selectedExercises.map((exerciseId) => {
+              const exercise = exercises.find((ex) => ex.id === exerciseId);
+              return exercise ? (
+                <Chip key={exerciseId} style={styles.chip}>
+                  {exercise.name}
+                </Chip>
+              ) : null;
+            })}
           </View>
         </View>
 
@@ -96,10 +149,10 @@ const AddWorkout = () => {
               <ScrollView>
                 {exercises.map((exercise) => (
                   <Checkbox.Item
-                    key={exercise}
-                    label={exercise}
-                    status={selectedExercises.includes(exercise) ? 'checked' : 'unchecked'}
-                    onPress={() => toggleExercise(exercise)}
+                    key={exercise.id}
+                    label={exercise.name}
+                    status={selectedExercises.includes(exercise.id) ? 'checked' : 'unchecked'}
+                    onPress={() => toggleExercise(exercise.id)}
                     color={color}
                     labelStyle={styles.dialogText}
                   />
@@ -192,33 +245,10 @@ const styles = StyleSheet.create({
   },
   selectButton: {
     marginTop: 5,
-    backgroundColor: color,
+    backgroundColor: 'white',
     borderRadius: 10,
     paddingHorizontal: 10,
-  },
-  selectButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  selectedItemsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 10,
-    gap: 8,
-  },
-  dialog: {
-    backgroundColor: '#1e1e1e',
-  },
-  dialogTitle: {
-    color: '#fff',
-  },
-  dialogText: {
-    color: '#ddd',
-    fontSize: 16,
-  },
-  dialogButtonText: {
-    color: color,
-    fontSize: 16,
+    marginBottom: 10,
   },
   submitButton: {
     marginTop: 20,
