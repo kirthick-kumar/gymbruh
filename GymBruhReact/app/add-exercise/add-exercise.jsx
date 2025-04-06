@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { router, useNavigation } from 'expo-router';
-import { SafeAreaView, StyleSheet, View, ScrollView } from 'react-native';
+import { SafeAreaView, StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { Text, TextInput, Button, RadioButton, Chip, Dialog, Portal } from 'react-native-paper';
 import { db } from '@/config/firebaseConfig';
-import { collection, addDoc } from "firebase/firestore";
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { useAuth } from '../AuthContext';
 
 const color = '#42307e';
 
@@ -11,19 +13,37 @@ const exerciseTypes = ['Strength', 'Cardio', 'Muscle', 'Balanced'];
 const muscles = ['Chest', 'Shoulder', 'Triceps', 'Back', 'Biceps', 'Legs', 'Forearms', 'Abs'];
 const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
 
+const capitalize = (str) => str?.charAt(0).toUpperCase() + str?.slice(1);
+
 const AddExercise = () => {
   const [exerciseName, setExerciseName] = useState('');
   const [exerciseType, setExerciseType] = useState('');
   const [primaryMuscle, setPrimaryMuscle] = useState('');
   const [equipment, setEquipment] = useState('');
   const [difficulty, setDifficulty] = useState('');
-  const [dialogVisible, setDialogVisible] = useState(false);
   const [muscleDialogVisible, setMuscleDialogVisible] = useState(false);
+  const [userExercises, setUserExercises] = useState([]);
+  const [selectedExerciseId, setSelectedExerciseId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
+  const { user } = useAuth();
   const navigation = useNavigation();
+
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
+
+  useEffect(() => {
+    const fetchUserExercises = async () => {
+      if (!user?.id) return;
+      const q = query(collection(db, "exercises"), where("user_id", "==", user.id));
+      const snapshot = await getDocs(q);
+      const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUserExercises(exercises);
+    };
+
+    fetchUserExercises();
+  }, [user]);
 
   const handleSubmit = async () => {
     const exercise = { 
@@ -31,22 +51,92 @@ const AddExercise = () => {
       type: exerciseType.toLowerCase(), 
       primary_muscle: primaryMuscle, 
       equipment, 
-      difficulty: difficulty.toLowerCase() 
+      difficulty: difficulty.toLowerCase(),
+      user_id: user.id,
     };
-    console.log(exercise);
 
     try {
-      await addDoc(collection(db, "exercises"), exercise);
+      if (isEditing && selectedExerciseId) {
+        const docRef = doc(db, "exercises", selectedExerciseId);
+        await updateDoc(docRef, exercise);
+      } else {
+        await addDoc(collection(db, "exercises"), exercise);
+      }
+
       router.push('/workout');
     } catch (error) {
-      console.error("Error adding exercise:", error);
+      console.error("Error saving exercise:", error);
     }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteDoc(doc(db, "exercises", id));
+      setUserExercises((prev) => prev.filter((ex) => ex.id !== id));
+      if (selectedExerciseId === id) resetForm();
+    } catch (error) {
+      console.error("Error deleting exercise:", error);
+    }
+  };
+
+  const resetForm = () => {
+    setExerciseName('');
+    setExerciseType('');
+    setPrimaryMuscle('');
+    setEquipment('');
+    setDifficulty('');
+    setSelectedExerciseId(null);
+    setIsEditing(false);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Add Exercise</Text>
+        <View style={styles.section}>
+          <Text style={styles.label}>Your Exercises</Text>
+          <ScrollView style={styles.exerciseList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+            {userExercises.length > 0 ? (
+              userExercises.map((exercise) => (
+                <View key={exercise.id} style={styles.exerciseChipContainer}>
+                  <View style={styles.chipRow}>
+                    <Chip
+                      style={[
+                        styles.chip,
+                        selectedExerciseId === exercise.id && { backgroundColor: color },
+                        { flex: 1 }
+                      ]}
+                      textStyle={[
+                        styles.chipText,
+                        selectedExerciseId === exercise.id && { color: '#fff' },
+                      ]}
+                      onPress={() => {
+                        if (selectedExerciseId === exercise.id) {
+                          resetForm();
+                        } else {
+                          setExerciseName(exercise.name);
+                          setExerciseType(capitalize(exercise.type));
+                          setPrimaryMuscle(exercise.primary_muscle);
+                          setEquipment(exercise.equipment);
+                          setDifficulty(capitalize(exercise.difficulty));
+                          setSelectedExerciseId(exercise.id);
+                          setIsEditing(true);
+                        }
+                      }}
+                    >
+                      {exercise.name}
+                    </Chip>
+                    <Pressable onPress={() => handleDelete(exercise.id)} style={{paddingTop: 10}}>
+                      <Icon name="trash-alt" size={20} color="#a78bfa" />
+                    </Pressable>
+                  </View>
+                </View>
+
+              ))
+            ) : (
+              <Text style={{ color: "#888" }}>No saved exercises found.</Text>
+            )}
+          </ScrollView>
+        </View>
 
         <TextInput
           label="Exercise Name"
@@ -84,7 +174,7 @@ const AddExercise = () => {
           </Button>
           {primaryMuscle ? (
             <Chip style={styles.chip} textStyle={styles.chipText}>
-                {primaryMuscle}
+              {primaryMuscle}
             </Chip>
           ) : null}
         </View>
@@ -146,12 +236,15 @@ const AddExercise = () => {
           style={styles.submitButton}
           labelStyle={styles.submitButtonText}
         >
-          Save Exercise
+          {isEditing ? 'Edit Exercise' : 'Save Exercise'}
         </Button>
 
         <Button 
           mode="contained" 
-          onPress={() => router.push('/workout')} 
+          onPress={() => {
+            resetForm();
+            router.push('/workout');
+          }} 
           style={[styles.submitButton, {backgroundColor: 'white'}]}
           labelStyle={[styles.submitButtonText, {color: color}]}
         >
@@ -168,16 +261,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#121212',
     paddingTop: 60,
   },
+  chipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  trashIcon: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  
   scrollContainer: {
     paddingHorizontal: 20,
     paddingBottom: 30,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 20,
   },
   input: {
     marginBottom: 20,
@@ -200,26 +296,22 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontWeight: '500',
   },
-  selectButton: {
-    marginTop: 5,
-    backgroundColor: color,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-  },
-  selectButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
   chip: {
     backgroundColor: 'white',
     marginTop: 10,
-    padding: 6,
     color: color,
+    padding: 5
   },
   chipText: {
     color: color,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  exerciseList: {
+    maxHeight: 150,
+  },
+  exerciseChipContainer: {
+    marginBottom: 10,
   },
   radioText: {
     color: '#ddd',
@@ -233,6 +325,16 @@ const styles = StyleSheet.create({
   },
   dialogText: {
     color: '#ddd',
+    fontSize: 16,
+  },
+  selectButton: {
+    marginTop: 5,
+    backgroundColor: color,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+  },
+  selectButtonText: {
+    color: '#fff',
     fontSize: 16,
   },
   submitButton: {

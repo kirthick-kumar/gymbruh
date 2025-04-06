@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { SafeAreaView, Text, Pressable, TextInput, Image, View, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { collection, addDoc } from "firebase/firestore";
-import { getAuth, sendEmailVerification } from "firebase/auth";
+import { collection, addDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
 import { signUp } from "../../services/auth"; // Firebase signup function
 import styles from '../styles/main';
@@ -30,47 +29,27 @@ const SignUpScreen = () => {
   };
 
   const handleSignUp = async () => {
-    const { username, email, age, height, weight, phoneNumber, password, confirmPassword } = formData;
-
-    // Validate fields
-    if (!username || !email || !age || !height || !weight || !phoneNumber || !password || !confirmPassword) {
-      Alert.alert("Error", "All fields are required!");
-      return;
-    }
+    const { email, password, confirmPassword } = formData;
+  
     if (password !== confirmPassword) {
       Alert.alert("Error", "Passwords do not match!");
       return;
     }
-
+  
     try {
       const userCredential = await signUp(email, password);
-      console.log(userCredential.user);
-      
-      if (userCredential && userCredential.user) {
-        const user = userCredential.user;
-        console.log('dASFDSAF', user);
-        
-        // Send email verification
-        await sendEmailVerification(user);
-        Alert.alert("Success", "Verification email sent! Please check your inbox.");
-
-        // Save user details in Firestore
-        await addDoc(collection(db, "users"), {
-          uid: user.uid,
-          username,
-          email,
-          age,
-          height,
-          weight,
-          phoneNumber,
-        });
-
-        Alert.alert("Success", "Registration successful!");
-        router.push("/login");
+  
+      if (userCredential) {
+        const uid = userCredential.user.uid;
+  
+        // Store user data with UID as document ID
+        await setDoc(doc(db, "users", uid), formData);
+  
+        console.log("Success", "Account and profile created successfully!");
+        router.push({ pathname: '/login' });
       }
     } catch (error) {
-      console.error("Error during signup:", error.message);
-      Alert.alert("Error", error.message);
+      console.error("Error during registration:", error);
     }
   };
 

@@ -5,8 +5,8 @@ import { auth } from "../config/firebaseConfig";
 export const signUp = async (email, password) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    console.log("User registered!", userCredential.user);
-    return userCredential; 
+    console.log("User registered!");
+    return userCredential;
   } catch (error) {
     console.error("Sign Up Error:", error.message);
   }
