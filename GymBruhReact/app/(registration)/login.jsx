@@ -1,23 +1,11 @@
 import React, { useState } from "react";
-import {
-  SafeAreaView,
-  Text,
-  Pressable,
-  TextInput,
-  Image,
-  Alert
-} from "react-native";
+import { SafeAreaView, Text, Pressable, TextInput, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import styles from "../styles/main";  
-import { signIn } from "../../services/auth";  // Firebase auth function
+import { signIn } from "../../services/auth"
 import { db } from "../../config/firebaseConfig";
-import {
-  query,
-  where,
-  getDocs,
-  collection
-} from "firebase/firestore";
-import { useAuth } from "../AuthContext";  // Use your updated AuthContext
+import { query, where, getDocs, collection } from "firebase/firestore";
+import { useAuth } from "../AuthContext";
 
 const LoginScreen = () => {
   const router = useRouter();

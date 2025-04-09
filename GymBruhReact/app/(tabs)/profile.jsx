@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Switch, Image, ScrollView, Alert, StyleSh
 import { useRouter } from 'expo-router';
 import { useAuth } from '../AuthContext'; 
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/config/firebaseConfig'; // adjust the path if needed
+import { db } from '@/config/firebaseConfig';
 
 const ProfileScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);

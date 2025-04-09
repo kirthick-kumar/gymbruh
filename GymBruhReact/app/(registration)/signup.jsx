@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { SafeAreaView, Text, Pressable, TextInput, Image, View, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { collection, addDoc, doc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
-import { signUp } from "../../services/auth"; // Firebase signup function
+import { signUp } from "../../services/auth";
 import styles from '../styles/main';
 
 const SignUpScreen = () => {
