@@ -8,7 +8,6 @@ import styles from '../styles/main';
 
 const SignUpScreen = () => {
   const router = useRouter();
-  const auth = getAuth();
 
   const [formData, setFormData] = useState({
     username: "",

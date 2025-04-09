@@ -68,7 +68,7 @@ const MyComponent = () => {
       }
 
       setWorkouts((prevWorkouts) => prevWorkouts.filter((w) => w.id !== workoutId));
-      console.log("Workout deleted successfully from workouts and user collection!");
+      console.log("Workout deleted");
     } catch (error) {
       console.error("Error deleting workout:", error);
     }
