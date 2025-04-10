@@ -1,23 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Switch, Image, ScrollView, Alert, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Switch, Image, ScrollView, Alert, StyleSheet, Modal } from "react-native";
 import { useRouter } from 'expo-router';
-import { useAuth } from '../AuthContext'; 
-import { doc, getDoc } from 'firebase/firestore';
+import { useAuth } from '../AuthContext';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/config/firebaseConfig';
+import { MaterialIcons } from '@expo/vector-icons';
+
+const defaultProfilePics = [
+  require('../../assets/profile1.png'),
+  require('../../assets/profile2.png'),
+  require('../../assets/profile3.png'),
+];
 
 const ProfileScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [userData, setUserData] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
-  const { user } = useAuth(); // assumes user contains the Firebase user object
+  const { user } = useAuth();
 
   const fetchUserData = async () => {
     try {
       if (!user || !user.id) {
-        console.log("Error", "User not logged in");
+        console.log("User not logged in");
         return;
       }
-      
+
       const userRef = doc(db, 'users', user.id);
       const userSnap = await getDoc(userRef);
 
@@ -32,15 +40,36 @@ const ProfileScreen = () => {
     }
   };
 
+  const handleProfilePicSelect = async (index) => {
+    try {
+      const selectedPic = index;
+      const userRef = doc(db, 'users', user.id);
+      await updateDoc(userRef, { profilePicIndex: selectedPic });
+      setUserData((prev) => ({ ...prev, profilePicIndex: selectedPic }));
+      setModalVisible(false);
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      Alert.alert("Error", "Failed to update profile picture");
+    }
+  };
+
   useEffect(() => {
-    fetchUserData();    
+    fetchUserData();
   }, []);
+
+  const selectedProfilePic = defaultProfilePics[userData?.profilePicIndex || 0];
 
   return (
     <ScrollView style={styles.container}>
-      <View style={[styles.section, {marginTop: 30, paddingTop: 40, backgroundColor: 'white'}]}>
-        <Image style={styles.image} source={require('../defaultp.png')} />
-        <Text style={[styles.sectionTitle, { fontSize: 30, alignSelf: 'center' }]}>
+      <View style={[styles.section, { marginTop: 30, paddingTop: 40 }]}>
+        <View style={styles.profileImageContainer}>
+          <Image style={styles.image} source={selectedProfilePic} />
+          <TouchableOpacity style={styles.editIcon} onPress={() => setModalVisible(true)}>
+            <MaterialIcons name="edit" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
+
+        <Text style={[styles.sectionTitle, { fontSize: 26, alignSelf: 'center', color: '#D6EFFF' }]}>
           {userData?.username || "N/A"}
         </Text>
         <Text style={styles.userDetail}>Age: {userData?.age || "N/A"}</Text>
@@ -57,14 +86,15 @@ const ProfileScreen = () => {
         </View>
       </View>
 
-      {/* Other sections */}
-      <TouchableOpacity style={styles.section}>
+      <TouchableOpacity style={styles.section}
+      onPress={() => router.push('/edit-profile')}>
         <Text style={styles.sectionTitle}>Edit Profile</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.section}>
+      <TouchableOpacity style={styles.section} onPress={() => router.push('/register-trainer')}>
         <Text style={styles.sectionTitle}>Register as Trainer</Text>
       </TouchableOpacity>
+
 
       <TouchableOpacity style={styles.section}>
         <Text style={[styles.sectionTitle, { color: '#dbad12' }]}>Premium</Text>
@@ -84,6 +114,25 @@ const ProfileScreen = () => {
       <TouchableOpacity style={[styles.section, styles.deleteAccountSection]}>
         <Text style={[styles.sectionTitle, styles.deleteText]}>Delete Account</Text>
       </TouchableOpacity>
+
+      {/* Modal for selecting profile picture */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Choose Profile Picture</Text>
+            <View style={styles.profilePicOptions}>
+              {defaultProfilePics.map((pic, index) => (
+                <TouchableOpacity key={index} onPress={() => handleProfilePicSelect(index)}>
+                  <Image source={pic} style={styles.optionPic} />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -91,34 +140,23 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e6e2e2",
+    backgroundColor: "#1C1C1C",
   },
-  image: {
-    width: 100,
-    height: 100, 
-    resizeMode: 'contain',
-    alignSelf: 'center',
-    marginBottom: 10
-  },   
   section: {
-    backgroundColor: "white",
+    backgroundColor: "#2A2A2A",
     padding: 15,
     marginVertical: 5,
     borderRadius: 10,
     marginHorizontal: 10,
-    shadowColor: "gray",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#47328c",
+    color: "#D6EFFF",
   },
   userDetail: {
     fontSize: 16,
-    color: "black",
+    color: "white",
     marginTop: 5,
   },
   switchContainer: {
@@ -126,6 +164,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 10,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+    borderRadius: 50,
+  },
+  profileImageContainer: {
+    alignSelf: 'center',
+    position: 'relative',
+    marginBottom: 10,
+  },
+  editIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#555',
+    borderRadius: 15,
+    padding: 5,
   },
   logoutSection: {
     marginTop: 10,
@@ -141,6 +198,42 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "white",
     textAlign: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    backgroundColor: "#2A2A2A",
+    padding: 20,
+    borderRadius: 10,
+    width: "85%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    color: "#D6EFFF",
+    marginBottom: 15,
+  },
+  profilePicOptions: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+  optionPic: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginHorizontal: 5,
+  },
+  closeButton: {
+    marginTop: 15,
+  },
+  closeButtonText: {
+    color: "#D6EFFF",
+    fontSize: 16,
   },
 });
 

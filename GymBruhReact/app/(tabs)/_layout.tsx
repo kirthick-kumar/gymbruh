@@ -22,38 +22,59 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},
         }),
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="workout"
         options={{
           title: 'Workouts',
-          tabBarIcon: ({ focused }) => (<Ionicons name="barbell-outline" size={focused ? 34 : 29} color={focused ? 'white' : color} />),
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name="barbell-outline" size={focused ? 34 : 29} color={focused ? 'white' : color} />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="leaderboard"
         options={{
           title: 'Leaderboard',
-          tabBarIcon: ({ focused }) => (<Ionicons name="list-outline" size={focused ? 34 : 29} color={focused ? '#FFD700' : color} />),
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name="list-outline" size={focused ? 34 : 29} color={focused ? '#FFD700' : color} />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="diet"
         options={{
           title: 'Diet',
-          tabBarIcon: ({ focused }) => (<Ionicons name="pizza-outline" size={focused ? 34 : 29} color={focused ? 'brown' : color} />),
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name="pizza-outline" size={focused ? 34 : 29} color={focused ? 'brown' : color} />
+          ),
         }}
       />
+
+      <Tabs.Screen
+        name="trainers"
+        options={{
+          title: 'Trainers',
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name="people-outline" size={focused ? 34 : 29} color={focused ? 'white' : color} />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => <Ionicons name='person-outline' size={focused ? 34 : 29} color={focused ? 'white' : color}/>,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name="person-outline" size={focused ? 34 : 29} color={focused ? 'white' : color} />
+          ),
         }}
       />
     </Tabs>

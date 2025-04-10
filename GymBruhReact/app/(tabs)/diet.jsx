@@ -77,7 +77,9 @@ const MealPlan = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🍽️ Meal Planner</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>🍽️ Meal Planner</Text>
+      </View>
 
       {/* Meal Type Dropdown */}
       <View style={styles.dropdownContainer}>
@@ -121,46 +123,46 @@ const MealPlan = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#121212", // dark background
     padding: 15,
   },
   title: {
     fontSize: 26,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#333",
+    color: "#fff", // white text
     marginBottom: 15,
   },
   dropdownContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: "#1e1e1e",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#333",
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     elevation: 4,
     marginBottom: 15,
   },
   picker: {
     fontSize: 18,
-    color: "#333",
+    color: "#fff", // white text for picker
     fontWeight: "bold",
     paddingVertical: 12,
     paddingHorizontal: 10,
   },
   placeholder: {
-    color: "#999",
+    color: "#aaa", // light gray placeholder
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#1e1e1e", // dark card background
     padding: 15,
     marginVertical: 10,
     borderRadius: 15,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     elevation: 5,
     alignItems: "center",
@@ -169,9 +171,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#333",
+    color: "#fff", // white text
     marginVertical: 5,
   },
+  
   image: {
     width: "100%",
     height: 180,
@@ -180,7 +183,7 @@ const styles = StyleSheet.create({
   calories: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#666",
+    color: "#ccc", // lighter text for calories
     marginTop: 5,
   },
   macrosContainer: {
@@ -189,10 +192,11 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 8,
   },
-  protein: { color: "#28a745", fontWeight: "bold" },
-  fat: { color: "#ff7f50", fontWeight: "bold" },
-  carbs: { color: "#007bff", fontWeight: "bold" },
+  protein: { color: "#81c784", fontWeight: "bold" }, // soft green
+  fat: { color: "#ffab91", fontWeight: "bold" }, // soft coral
+  carbs: { color: "#64b5f6", fontWeight: "bold" }, // soft blue
 });
+
 
 const pickerStyles = {
   inputIOS: styles.picker,

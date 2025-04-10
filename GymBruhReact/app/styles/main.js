@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
       paddingHorizontal: 10,
       marginBottom: 10,
       alignSelf: 'center',
-      outlineColor: 'purple',
+      outlineColor: 'white',
     },
     flex_inputs:{
       display:'flex',
@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
       justifyContent:'center',
       borderRadius:40,
       backgroundColor:purple,
+      outlineColor: 'white',
       padding:6,
       width: '120px',
       height: '50px',
