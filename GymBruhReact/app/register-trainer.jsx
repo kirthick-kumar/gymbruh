@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { useAuth } from './AuthContext';
 import { db } from '@/config/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { router } from 'expo-router';
+import { useNavigation } from 'expo-router';
 
 const specialtyOptions = [
   'Strength',
@@ -34,6 +35,11 @@ const RegisterTrainerScreen = () => {
 
   const { user } = useAuth();
 
+  const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({ title: `Trainer Registration` });
+  }, [navigation]);
+  
   const toggleSpecialty = (specialty) => {
     setSelectedSpecialties((prev) =>
       prev.includes(specialty)

@@ -6,7 +6,6 @@ const stripeRoutes = require('./routes/stripe');
 const app = express();
 
 
-
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, PATCH, DELETE');
@@ -14,10 +13,12 @@ app.use((req, res, next) => {
     next();
 });
 
+
 app.use((error, req, res, next) => {
     console.log(error);
-    
     res.status(error.status || 500).json({msg: error.message})
 })
 
-app.listen(8080);
+app.use(stripeRoutes);
+
+app.listen(3000);

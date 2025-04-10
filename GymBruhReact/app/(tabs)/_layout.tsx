@@ -33,7 +33,7 @@ export default function TabLayout() {
         options={{
           title: 'Workouts',
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="barbell-outline" size={focused ? 34 : 29} color={focused ? 'white' : color} />
+            <Ionicons name="barbell-outline" size={29} color={focused ? 'white' : color} />
           ),
         }}
       />
@@ -43,7 +43,7 @@ export default function TabLayout() {
         options={{
           title: 'Leaderboard',
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="list-outline" size={focused ? 34 : 29} color={focused ? '#FFD700' : color} />
+            <Ionicons name="list-outline" size={29} color={focused ? '#FFD700' : color} />
           ),
         }}
       />
@@ -53,7 +53,7 @@ export default function TabLayout() {
         options={{
           title: 'Diet',
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="pizza-outline" size={focused ? 34 : 29} color={focused ? 'brown' : color} />
+            <Ionicons name="pizza-outline" size={29} color={focused ? 'brown' : color} />
           ),
         }}
       />
@@ -63,7 +63,7 @@ export default function TabLayout() {
         options={{
           title: 'Trainers',
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="people-outline" size={focused ? 34 : 29} color={focused ? 'white' : color} />
+            <Ionicons name="people-outline" size={29} color={focused ? 'white' : color} />
           ),
         }}
       />
@@ -73,7 +73,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="person-outline" size={focused ? 34 : 29} color={focused ? 'white' : color} />
+            <Ionicons name="person-outline" size={29} color={focused ? 'white' : color} />
           ),
         }}
       />

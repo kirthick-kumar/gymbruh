@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, Linking, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router"; 
-import { router, useNavigation } from 'expo-router';
+import { useNavigation } from 'expo-router';
 
 
 const RecipeDetails = () => {
@@ -15,7 +15,7 @@ const RecipeDetails = () => {
   }
   const navigation = useNavigation();
   useEffect(() => {
-    navigation.setOptions({ headerShown: false });
+    navigation.setOptions({ title: `Recipe` });
   }, [navigation]);
 
   return (
@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
-    backgroundColor: "#fff",
-    paddingTop: 70
+    backgroundColor: "#121212",
+    paddingTop: 30
   },
   backButton: {
     backgroundColor: "#ddd",
@@ -70,12 +70,14 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: "bold",
+    color: 'white'
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 10,
+    color: 'white'
   },
   image: {
     width: "100%",
@@ -87,23 +89,26 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginVertical: 10,
+    color: 'gray'
   },
   macrosContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 15,
   },
-  protein: { color: "green", fontWeight: "bold" },
-  fat: { color: "orange", fontWeight: "bold" },
-  carbs: { color: "red", fontWeight: "bold" },
+  protein: { color: "#81c784", fontWeight: "bold" }, // soft green
+  fat: { color: "#ffab91", fontWeight: "bold" }, // soft coral
+  carbs: { color: "#64b5f6", fontWeight: "bold" }, // soft blue
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginTop: 15,
+    color: 'white'
   },
   ingredient: {
     fontSize: 16,
     marginVertical: 5,
+    color: 'white'
   },
   button: {
     backgroundColor: "#007BFF",

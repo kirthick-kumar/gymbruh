@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, Image, FlatList, StyleSheet, Animated, ActivityIndicator } from "react-native";
+import { SafeAreaView, View, Text, Image, FlatList, StyleSheet, Animated, ActivityIndicator } from "react-native";
 import axios from "axios";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
@@ -76,7 +76,7 @@ const MealPlan = () => {
   }, [selectedMealType, selectedDietFilter]);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>🍽️ Meal Planner</Text>
       </View>
@@ -116,7 +116,7 @@ const MealPlan = () => {
           )}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#121212", // dark background
     padding: 15,
+    paddingTop: 40
   },
   title: {
     fontSize: 26,

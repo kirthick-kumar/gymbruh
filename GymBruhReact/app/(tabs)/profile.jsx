@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Switch, Image, ScrollView, Alert, StyleSheet, Modal } from "react-native";
+import { View, Text, TouchableOpacity, Switch, Image, ScrollView, Alert, StyleSheet, Modal, Linking } from "react-native";
 import { useRouter } from 'expo-router';
 import { useAuth } from '../AuthContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/config/firebaseConfig';
 import { MaterialIcons } from '@expo/vector-icons';
-// import { useStripe } from '@stripe/stripe-react-native';
 
 const defaultProfilePics = [
   require('../../assets/profile1.png'),
@@ -19,6 +18,25 @@ const ProfileScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
+
+  const handleBuyPremium = async () => {
+    try {
+      console.log("SDAFASDF");
+      const response = await fetch('http://192.168.29.254:3000/pay', {
+        method: 'POST',
+      });
+      
+      const data = await response.json();
+  
+      if (data?.url) {
+        Linking.openURL(data.url); // Redirect to Stripe Checkout
+      } else {
+        console.log('Error', 'Failed to load payment page');
+      }
+    } catch (err) {
+      console.log('Payment Error', err);
+    }
+  };
 
   const fetchUserData = async () => {
     try {
@@ -97,7 +115,7 @@ const ProfileScreen = () => {
       </TouchableOpacity>
 
 
-      <TouchableOpacity style={styles.section}>
+      <TouchableOpacity style={styles.section} onPress={handleBuyPremium}>
         <Text style={[styles.sectionTitle, { color: '#dbad12' }]}>Premium</Text>
       </TouchableOpacity>
 
