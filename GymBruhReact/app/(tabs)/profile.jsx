@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/config/firebaseConfig';
 import { MaterialIcons } from '@expo/vector-icons';
+// import { useStripe } from '@stripe/stripe-react-native';
 
 const defaultProfilePics = [
   require('../../assets/profile1.png'),

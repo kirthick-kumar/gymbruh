@@ -21,8 +21,8 @@ const AddWorkout = () => {
   const [exercises, setExercises] = useState([]);
   const [dialogVisible, setDialogVisible] = useState(false);
 
-  useEffect(() => {
-    navigation.setOptions({ headerShown: false });
+  useEffect(() => {  
+    navigation.setOptions({ title: `Your Workout` });
     fetchExercises();
     if (workoutId) loadWorkoutData(workoutId);
   }, [navigation, workoutId]);
@@ -188,15 +188,6 @@ const AddWorkout = () => {
         <Button mode="contained" onPress={handleSubmit} style={styles.submitButton} labelStyle={styles.submitButtonText}>
           {workoutId ? "Update Workout" : "Save Workout"}
         </Button>
-
-        <Button
-          mode="contained"
-          onPress={() => router.push('/workout')}
-          style={[styles.submitButton, { backgroundColor: 'white' }]}
-          labelStyle={[styles.submitButtonText, { color }]}
-        >
-          Back
-        </Button>
       </ScrollView>
     </SafeAreaView>
   );
@@ -206,7 +197,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-    paddingTop: 60,
+    paddingTop: 30,
   },
   scrollContainer: {
     paddingHorizontal: 20,

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TextInput, Pressable, StyleSheet, CheckBox,} from "react-native";
+import { View, Text, FlatList, TextInput, Pressable, StyleSheet } from "react-native";
+import { Checkbox } from "react-native-paper";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "@/config/firebaseConfig";
-import {doc, getDoc, addDoc, collection, getDocs,} from "firebase/firestore";
+import { doc, getDoc, addDoc, collection, getDocs } from "firebase/firestore";
 
 const themeColor = "#42307e";
 
@@ -24,7 +25,7 @@ const ExercisesScreen = () => {
         setUserId(user.uid);
       } else {
         console.log("User not authenticated");
-        router.replace("/login"); // or wherever your login screen is
+        router.replace("/login");
       }
     });
 
@@ -33,8 +34,8 @@ const ExercisesScreen = () => {
 
   useEffect(() => {
     if (!userId) return;
-    navigation.setOptions({ headerShown: false });
     fetchWorkout();
+    navigation.setOptions({ title: `Workout` });
   }, [userId]);
 
   const fetchWorkout = async () => {
@@ -182,9 +183,6 @@ const ExercisesScreen = () => {
       <View style={styles.header}>
         <Text style={styles.title}>{workoutData.name}</Text>
         <View style={styles.buttonContainer}>
-          <Pressable style={styles.backButton} onPress={() => router.push("/workout")}>
-            <Text style={styles.backButtonText}>Back</Text>
-          </Pressable>
           <Pressable style={styles.finishButton} onPress={handleFinish}>
             <Text style={styles.finishButtonText}>Finish</Text>
           </Pressable>
@@ -222,9 +220,13 @@ const ExercisesScreen = () => {
                       {["weight", "reps", "rpe", "rating"].map((field, i) => (
                         <View key={i} style={styles.column}>
                           <TextInput
-                            style={styles.input}
+                            style={[
+                              styles.input,
+                              set.completed && styles.disabledInput
+                            ]}
                             value={String(set[field])}
                             keyboardType="numeric"
+                            editable={!set.completed}
                             onChangeText={(value) =>
                               handleSetChange(exercise.id, set.id, field, Number(value))
                             }
@@ -232,11 +234,13 @@ const ExercisesScreen = () => {
                         </View>
                       ))}
                       <View style={styles.column}>
-                        <CheckBox
-                          value={set.completed}
-                          onValueChange={(value) =>
-                            handleSetChange(exercise.id, set.id, "completed", value)
+                        <Checkbox
+                          status={set.completed ? "checked" : "unchecked"}
+                          onPress={() =>
+                            handleSetChange(exercise.id, set.id, "completed", !set.completed)
                           }
+                          color={themeColor}
+                          uncheckedColor="#ccc"
                         />
                       </View>
                     </View>
@@ -260,7 +264,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#121212",
     padding: 10,
-    paddingTop: 50,
+    paddingTop: 30,
   },
   header: {
     flexDirection: "row",
@@ -277,24 +281,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
   },
-  backButton: {
-    flex: 1,
-    backgroundColor: "white",
-    padding: 8,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  backButtonText: {
-    color: themeColor,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
   finishButton: {
-    flex: 1,
     backgroundColor: themeColor,
     padding: 8,
     borderRadius: 5,
     alignItems: "center",
+    width: 60,
   },
   finishButtonText: {
     color: "white",
@@ -344,10 +336,14 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     textAlign: "center",
-    borderRadius: 5,
+    borderRadius: 4,
     paddingVertical: 4,
     margin: 2,
     maxWidth: 50,
+    minWidth: 40,
+  },
+  disabledInput: {
+    opacity: 0.5,
   },
   addButton: {
     backgroundColor: themeColor,

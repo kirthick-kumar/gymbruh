@@ -30,7 +30,7 @@ const AddExercise = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    navigation.setOptions({ headerShown: false });
+    navigation.setOptions({ title: `Your Exercise` });
   }, [navigation]);
 
   useEffect(() => {
@@ -238,18 +238,6 @@ const AddExercise = () => {
         >
           {isEditing ? 'Edit Exercise' : 'Save Exercise'}
         </Button>
-
-        <Button 
-          mode="contained" 
-          onPress={() => {
-            resetForm();
-            router.push('/workout');
-          }} 
-          style={[styles.submitButton, {backgroundColor: 'white'}]}
-          labelStyle={[styles.submitButtonText, {color: color}]}
-        >
-          Back
-        </Button>
       </ScrollView>
     </SafeAreaView>
   );
@@ -259,7 +247,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-    paddingTop: 60,
+    paddingTop: 30,
   },
   chipRow: {
     flexDirection: 'row',
