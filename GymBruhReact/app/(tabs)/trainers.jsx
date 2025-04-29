@@ -4,43 +4,79 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
-import { db } from '@/config/firebaseConfig';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db, auth } from '@/config/firebaseConfig';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const TrainerListScreen = () => {
   const [trainers, setTrainers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
 
   useEffect(() => {
-    const fetchTrainers = async () => {
+    const checkPremiumAndFetch = async () => {
       try {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('isTrainer', '==', true));
-        const snapshot = await getDocs(q);
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            const userRef = doc(db, 'users', user.uid);
+            const userSnap = await getDoc(userRef);
+            const userData = userSnap.data();
 
-        const trainerList = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+            if (userData?.isPremium) {
+              setIsPremiumUser(true);
+              const usersRef = collection(db, 'users');
+              const q = query(usersRef, where('isTrainer', '==', true));
+              const snapshot = await getDocs(q);
 
-        setTrainers(trainerList);
+              const trainerList = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }));
+              setTrainers(trainerList);
+            } else {
+              setIsPremiumUser(false);
+            }
+          }
+          setLoading(false);
+        });
+
+        return () => unsubscribe();
       } catch (error) {
-        console.error('Error fetching trainers:', error);
-      } finally {
+        console.error('Error checking premium status:', error);
         setLoading(false);
       }
     };
 
-    fetchTrainers();
+    checkPremiumAndFetch();
   }, []);
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7657df" />
+      </View>
+    );
+  }
+
+  if (!isPremiumUser) {
+    return (
+      <View style={styles.premiumContainer}>
+        <View style={styles.premiumCard}>
+          <Text style={styles.premiumTitle}>Premium Required</Text>
+          <Text style={styles.premiumText}>
+            Viewing trainers is a premium feature. To unlock this content, please navigate to your profile and purchase a premium subscription.
+          </Text>
+          <View style={styles.imageWrapper}>
+            <Image
+              source={require('@/assets/pl.png')} // Replace with your actual image path
+              style={styles.premiumImage}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
       </View>
     );
   }
@@ -82,16 +118,11 @@ const TrainerListScreen = () => {
             {details.bio ? (
               <>
                 <Text style={styles.label}>Bio:</Text>
-                <ScrollView
-                  style={styles.bioScroll}
-                  nestedScrollEnabled={true}
-                >
+                <ScrollView style={styles.bioScroll} nestedScrollEnabled={true}>
                   <Text style={styles.text}>{details.bio}</Text>
                 </ScrollView>
               </>
             ) : null}
-
-
           </View>
         );
       })}
@@ -152,7 +183,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     padding: 8,
     borderRadius: 5,
-  },  
+  },
   specialty: {
     backgroundColor: '#42307e',
     color: '#fff',
@@ -163,16 +194,42 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 12,
   },
-  button: {
-    backgroundColor: '#42307e',
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 15,
+  premiumContainer: {
+    flex: 1,
+    backgroundColor: '#1C1C1C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  premiumCard: {
+    backgroundColor: '#2A2A2A',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    maxWidth: 350,
+  },
+  premiumTitle: {
+    fontSize: 22,
+    color: '#FFD700',
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  premiumText: {
+    fontSize: 14,
+    color: '#ddd',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  imageWrapper: {
+    width: 150,
+    height: 150,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  premiumImage: {
+    width: '100%',
+    height: '100%',
   },
 });
 

@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Switch, Image, ScrollView, Alert, StyleSheet, Modal, Linking } from "react-native";
 import { useRouter } from 'expo-router';
 import { useAuth } from '../AuthContext';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/config/firebaseConfig';
+import { getAuth, deleteUser } from 'firebase/auth';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const defaultProfilePics = [
@@ -22,7 +23,7 @@ const ProfileScreen = () => {
   const handleBuyPremium = async () => {
     try {
       console.log("SDAFASDF");
-      const response = await fetch('http://192.168.29.254:3000/pay', {
+      const response = await fetch('http://localhost:3000/pay', {
         method: 'POST',
       });
       
@@ -37,6 +38,35 @@ const ProfileScreen = () => {
       console.log('Payment Error', err);
     }
   };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+
+      if (!currentUser || !user?.id) {
+        Alert.alert('Error', 'User not authenticated');
+        return;
+      }
+
+      // Delete Firestore user document
+      const userRef = doc(db, 'users', user.id);
+      await updateDoc(userRef, {
+        deletedAt: new Date().toISOString(), // Optional: soft-delete tracking
+      });
+      await deleteDoc(userRef); // Actually delete the doc
+
+      // Delete Firebase Auth account
+      await deleteUser(currentUser);
+
+      Alert.alert('Deleted', 'Your account has been deleted');
+      router.push('/'); // Navigate to home or login
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      Alert.alert('Error', 'Failed to delete account. Try logging in again.');
+    }
+  };
+  
 
   const fetchUserData = async () => {
     try {
@@ -130,7 +160,7 @@ const ProfileScreen = () => {
         <Text style={[styles.sectionTitle, styles.logoutText]}>Logout</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.section, styles.deleteAccountSection]}>
+      <TouchableOpacity style={[styles.section, styles.deleteAccountSection]} onPress={handleDeleteAccount}>
         <Text style={[styles.sectionTitle, styles.deleteText]}>Delete Account</Text>
       </TouchableOpacity>
 

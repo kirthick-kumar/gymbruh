@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
 import { signUp } from "../../services/auth";
+import { sendEmailVerification } from "firebase/auth";
 import styles from '../styles/main';
 
 const SignUpScreen = () => {
@@ -29,26 +30,30 @@ const SignUpScreen = () => {
 
   const handleSignUp = async () => {
     const { email, password, confirmPassword } = formData;
-  
+
     if (password !== confirmPassword) {
       Alert.alert("Error", "Passwords do not match!");
       return;
     }
-  
+
     try {
       const userCredential = await signUp(email, password);
-  
+
       if (userCredential) {
-        const uid = userCredential.user.uid;
-  
+        const user = userCredential.user;
+
+        // Send email verification
+        await sendEmailVerification(user);
+
         // Store user data with UID as document ID
-        await setDoc(doc(db, "users", uid), formData);
-  
-        console.log("Success", "Account and profile created successfully!");
+        await setDoc(doc(db, "users", user.uid), formData);
+
+        Alert.alert("Success", "Account created! Please verify your email.");
         router.push({ pathname: '/login' });
       }
     } catch (error) {
       console.error("Error during registration:", error);
+      Alert.alert("Registration Error", error.message);
     }
   };
 
