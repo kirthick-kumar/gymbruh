@@ -2,9 +2,6 @@
 
 A powerful Gym Tracking mobile app built with **React Native (Expo)**, **Node.js**, and **Firebase**. GymBruh helps users track workouts, get motivated, and discover diet suggestions — all in one place.
 
----
-
-## 🚀 Features
 
 ### Authentication
 - Secure login and registration powered by **Firebase Auth**.
